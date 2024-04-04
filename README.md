@@ -1,14 +1,19 @@
 # CyberShield
-An all in one app that has the latest cybersecurity protocols and automated OSINT for spearphishing protection/public data collection prevention
 
-NOTE: Currently only the OSINT feature is available.
+An app that protects that has integrated WireGuard and automated OSINT to stop spearphishing.
 
-**Usage:**
+## Architecture
+
+Android and Windows GUI in Kotlin
+
+## Usage
 
 Requires Python installed on any OS.
 
-`pip install duckduckgo_search`
+```
+python3 -m venv venv
+source venv/bin/activate
+pip install -Ur requirements.txt
+```
 
-`pip install -U g4f`
-
-Input any name under "Query:"
+Input any person's name under "Query:"
