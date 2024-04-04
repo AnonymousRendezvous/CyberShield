@@ -1,6 +1,4 @@
-# pip install duckduckgo_search
 from duckduckgo_search import DDGS
-# pip install -U g4f
 from g4f.client import Client
 
 word = input("Query: ")
@@ -47,9 +45,6 @@ print(response.choices[0].message.content)
 #     Integrate images feature
 #     Integrate maps feature with images feature to determine exact location
 #     Integrate reverse image tracing(if possible)
-
-
-#MIT licence
 
 # Special thanks to:
 # https://github.com/xtekky/gpt4free, for providing free gpt api
