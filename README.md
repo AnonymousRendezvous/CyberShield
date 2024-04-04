@@ -16,4 +16,13 @@ source venv/bin/activate
 pip install -Ur requirements.txt
 ```
 
+Alternative setup:
+
+Create new python file in Replit and type in the necessary commands in shell.
+
+```
+pip install duckduckgo_search
+pip install -U g4f
+```
+
 Input any person's name under "Query:"
