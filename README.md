@@ -6,7 +6,7 @@ An app that protects that has integrated WireGuard and automated OSINT to stop s
 
 Android and Windows GUI in Kotlin
 
-## Usage
+## Installation/Setup
 
 Requires Python installed on any OS.
 
@@ -18,11 +18,16 @@ pip install -Ur requirements.txt
 
 Alternative setup:
 
-Create new python file in Replit and type in the necessary commands in shell.
+Create new python file and type in the necessary commands in shell/terminal.
 
 ```
 pip install duckduckgo_search
 pip install -U g4f
 ```
+## Usage
 
 Input any person's name under "Query:"
+
+Input any additional information about the person under "Any other information: "
+
+If no other information, simply press enter, otherwise type in complete sentences and don't use acronyms.
