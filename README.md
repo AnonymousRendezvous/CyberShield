@@ -30,4 +30,6 @@ Input any person's name under "Query:"
 
 Input any additional information about the person under "Any other information: "
 
-If no other information, simply press enter, otherwise type in complete sentences and don't use acronyms.
+For "Any other information: ", type in complete sentences and don't use acronyms, do also remember to spell out full nouns and watch your intensifiers.
+
+If no other information, simply press enter.
