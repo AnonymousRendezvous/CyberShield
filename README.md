@@ -8,6 +8,8 @@ Android and Windows GUI in Kotlin
 
 ## Installation/Setup
 
+Currently only available in terminal.
+
 Requires Python installed on any OS.
 
 ```
