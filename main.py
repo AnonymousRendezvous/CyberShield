@@ -9,9 +9,9 @@ word = input("Query: ")
 add = input("Any other information: ")
 new = '"' + word + '"'
 
-results = DDGS().text(new, max_results=200)
+results = DDGS().text(new, max_results=100)
 # Where results is a dictionary
-images = DDGS().images(word, region="sg-en", max_results=200)
+images = DDGS().images(word, region="sg-en", max_results=50)
 ## Where images is still a dictionary
 
 #payload for first search
