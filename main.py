@@ -7,6 +7,7 @@ from g4f.client import Client
 
 word = input("Query: ")
 add = input("Any other information: ")
+img = input("Do you want to trawl for images? (beta testing) y/n: ")
 new = '"' + word + '"'
 
 results = DDGS().text(new, max_results=100)
@@ -40,10 +41,17 @@ payload += " Data: " + gptstring
 payloadrefined = "Now, with the above data, I will provide you with some image links relating to " + word
 payloadrefined += ". Do filter through all the data and give me ANY relevant links. Here is the data: " + refgptstr
 
+finalpayload = ""
+
+if img == "y":
+  finalpayload += payload + " " + payloadrefined
+else:
+  finalpayload += payload
+
 client = Client()
 response = client.chat.completions.create(
     model = "gpt-3.5-turbo",
-    messages=[{"role": "user", "content": payload + payloadrefined}]
+    messages=[{"role": "user", "content": finalpayload}]
 )
 print("")
 print(response.choices[0].message.content)
