@@ -15,6 +15,9 @@ Requires Python installed on any OS.
 ```
 python3 -m venv venv
 source venv/bin/activate
+
+git clone https://github.com/AnonymousRendezvous/CyberShield
+cd CyberShield
 pip install -Ur requirements.txt
 ```
 
@@ -24,9 +27,13 @@ Create new python file and type in the necessary commands in shell/terminal.
 
 (Replit highly encouraged for online compilation)
 
+In terminal/shell:
+
 ```
+git clone https://github.com/AnonymousRendezvous/CyberShield
 pip install duckduckgo_search
 pip install -U g4f
+cd CyberShield
 ```
 ## Usage
 
