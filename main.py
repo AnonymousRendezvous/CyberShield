@@ -10,10 +10,12 @@ add = input("Any other information: ")
 img = input("Do you want to trawl for images? (beta testing) y/n: ")
 new = '"' + word + '"'
 
-results = DDGS().text(new, max_results=100)
-# Where results is a dictionary
-images = DDGS().images(word, region="sg-en", max_results=50)
-## Where images is still a dictionary
+if img == "y":
+    results = DDGS().text(new, max_results=50)
+    images = DGGS().images(word, region="sg-en", max_results=50)
+else:
+    results = DDGS().text(new, max_results=100)
+
 
 #payload for first search
 payload =  "If I gave you some information on someone, could you write me a comprehensive report on them?"
@@ -27,24 +29,31 @@ gptstring = ""
 refgptstr = ""
 
 #iterating through dictionary
-for x in results:
-    gptstring += ' '
-    gptstring += str(x)
 
-for x in images:
-    refgptstr += ' '
-    refgptstr += str(x)
+if img == "y":
+    for x in results:
+        gptstring += ' '
+        gptstring += str(x)
+    
+    for x in images:
+        refgptstr += ' '
+        refgptstr += str(x)
+else:
+    for x in results:
+        gptstring += ' '
+        gptstring += str(x)
+
 
 payload += " Data: " + gptstring
 
 #payload for images
-payloadrefined = "Now, with the above data, I will provide you with some image links relating to " + word
-payloadrefined += ". Do filter through all the data and give me ANY relevant links. Here is the data: " + refgptstr
+payloadimg = "Now, with the above data, I will provide you with some image links relating to " + word
+payloadimg += ". Do filter through all the data and give me ANY relevant links. Here is the data: " + refgptstr
 
 finalpayload = ""
 
 if img == "y":
-  finalpayload += payload + " " + payloadrefined
+  finalpayload += payload + " " + payloadimg
 else:
   finalpayload += payload
 
@@ -57,4 +66,4 @@ print("")
 print(response.choices[0].message.content)
 
 # Special thanks to:
-# https://github.com/xtekky/gpt4free, for providing free gpt api
+# https://github.com/xtekky/gpt4free, for providing free gpt 3.5 api
