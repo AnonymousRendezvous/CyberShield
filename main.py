@@ -12,9 +12,9 @@ new = '"' + word + '"'
 
 if img == "y":
     results = DDGS().text(new, max_results=50)
-    images = DGGS().images(word, region="sg-en", max_results=50)
+    images = DGGS().images(word, region="sg-en", max_results=30)
 else:
-    results = DDGS().text(new, max_results=100)
+    results = DDGS().text(new, max_results=80)
 
 
 #payload for first search
