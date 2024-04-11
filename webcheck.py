@@ -10,3 +10,6 @@ headers = {
 }
 response = requests.post(url, headers=headers, data=json.dumps(payload))
 print(response.text , response.status_code)
+
+# Special thanks to:
+# https://namescan.io/freeemailcompromisedcheck for free email leak checker
