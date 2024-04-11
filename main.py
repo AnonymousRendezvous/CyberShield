@@ -11,10 +11,10 @@ img = input("Do you want to trawl for images? (beta testing) y/n: ")
 new = '"' + word + '"'
 
 if img == "y":
-    results = DDGS().text(new, max_results=50)
-    images = DGGS().images(word, region="sg-en", max_results=30)
+    results = DDGS().text(new, max_results=30)
+    images = DDGS().images(word, region="sg-en", max_results=20)
 else:
-    results = DDGS().text(new, max_results=80)
+    results = DDGS().text(new, max_results=50)
 
 
 #payload for first search
