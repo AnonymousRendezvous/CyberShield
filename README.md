@@ -12,29 +12,26 @@ Currently only available in terminal.
 
 Requires Python installed on any OS.
 
+Creating virtual environment in Linux:
+
 ```
 python3 -m venv venv
 source venv/bin/activate
+```
+In root terminal or otherwise:
 
+```
 git clone https://github.com/AnonymousRendezvous/CyberShield
 cd CyberShield
 pip install -Ur requirements.txt
 ```
-
 Alternative setup:
 
-Create new python file and type in the necessary commands in shell/terminal.
+Create new python file and type in the above commands in shell/terminal.
 
 (Replit highly encouraged for online compilation)
 
-In terminal/shell:
 
-```
-git clone https://github.com/AnonymousRendezvous/CyberShield
-pip install duckduckgo_search
-pip install -U g4f
-cd CyberShield
-```
 ## Usage
 
 ```
