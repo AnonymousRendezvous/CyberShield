@@ -1,2 +1,2 @@
 duckduckgo_search==5.2.2
-g4f==0.2.8.2
+g4f==0.2.9.8
