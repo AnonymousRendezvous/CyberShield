@@ -42,8 +42,8 @@ Input any person's name under "Query:"
 
 Input any additional information about the person under "Any other information: "
 
-For "Any other information: ", type in complete sentences and don't use acronyms, do also remember to spell out full nouns and watch your intensifiers.
-
-If no other information, simply press enter.
+For "Any other information: ", type in complete sentences and don't use acronyms, do also remember to spell out full nouns and watch your intensifiers. If no other information, simply press enter.
 
 Type either y/n in the "Do you want to trawl for images?" parameter.
+
+Specify details and accuracy from 1-10. Do note that the higher the number, the slower the program but the higher the accuracy.
