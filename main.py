@@ -22,7 +22,7 @@ else:
 #payload for first search
 payload =  "If I gave you some information on someone, could you write me a comprehensive report on them?"
 payload += " Do note that the person's name is" + word + ", perhaps you could also create a web of people relating to " + word + ", and provide ANY and ALL links where the information can be found."
-payload += "Do also see if you can extract basic information such as past and current education statuses, location and information from certain accounts like their username or email."
+payload += "Do also see if you can extract basic information such as past and current education statuses, location and information from ANY accounts like their username or email."
 payload += "Lastly, also note that " + add 
 payload += " Here is the data with links (to be included): \n."
 
@@ -78,11 +78,17 @@ def chat(finalpayload):
     
 # Threading implementation (submit multiple response to chat gpt)
 for x in range(details):
-    t1 = threading.Thread(target=chat, args=(finalpayload,))
-    t1.start()
-    t1.join()
-
     print(x)
+    t1 = threading.Thread(target=chat, args=(finalpayload,))
+    t2 = threading.Thread(target=chat, args=(finalpayload,))
+    t3 = threading.Thread(target=chat, args=(finalpayload,))
+    t1.start()
+    t2.start()
+    t3.start()
+
+    t1.join()
+    t2.join()
+    t3.join()
 
 print("")
 print(storemsg)
