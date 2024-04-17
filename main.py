@@ -13,10 +13,10 @@ details = int(input("How detailed do you want your report to be? (1-10): "))
 new = '"' + word + '"'
 
 if img == "y":
-    results = DDGS().text(new, max_results=100)
-    images = DDGS().images(new, region="sg-en", max_results=100)
+    results = DDGS().text(new, max_results=25)
+    images = DDGS().images(new, region="sg-en", max_results=25)
 else:
-    results = DDGS().text(new, max_results=200)
+    results = DDGS().text(new, max_results=50)
 
 
 #payload for first search
@@ -65,20 +65,21 @@ storemsg = ""
 def chat(finalpayload):
     client = Client()
     response = client.chat.completions.create(
-        model = "gpt-3.5-turbo",
+        model = "openchat_3.5",
         messages=[{"role": "user", "content": finalpayload}]
     )
     #accessing global values outside function
     global storenum
     global storemsg
+    print(response.choices[0].message.content)
     if len(response.choices[0].message.content) > storenum:
         storenum = len(response.choices[0].message.content)
-        storemsg = response.choices[0].message.content
-
+        storemsg = str(response.choices[0].message.content)
     
-# Threading implementation (submit multiple response to chat gpt)
+    
+# Threading implementation (submit multiple responses to chat gpt)
 for x in range(details):
-    print(x)
+    print("This will take a while, please wait...")
     t1 = threading.Thread(target=chat, args=(finalpayload,))
     t2 = threading.Thread(target=chat, args=(finalpayload,))
     t3 = threading.Thread(target=chat, args=(finalpayload,))
