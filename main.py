@@ -71,7 +71,6 @@ def chat(finalpayload):
     #accessing global values outside function
     global storenum
     global storemsg
-    print(response.choices[0].message.content)
     if len(response.choices[0].message.content) > storenum:
         storenum = len(response.choices[0].message.content)
         storemsg = str(response.choices[0].message.content)
