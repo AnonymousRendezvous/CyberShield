@@ -65,7 +65,7 @@ storemsg = ""
 def chat(finalpayload):
     client = Client()
     response = client.chat.completions.create(
-        model = "openchat_3.5",
+        model = "airoboros-70b",
         messages=[{"role": "user", "content": finalpayload}]
     )
     #accessing global values outside function
@@ -79,6 +79,7 @@ def chat(finalpayload):
 # Threading implementation (submit multiple responses to chat gpt)
 for x in range(details):
     print("This will take a while, please wait...")
+    # to fix coro async runtime error in future
     t1 = threading.Thread(target=chat, args=(finalpayload,))
     t2 = threading.Thread(target=chat, args=(finalpayload,))
     t3 = threading.Thread(target=chat, args=(finalpayload,))
