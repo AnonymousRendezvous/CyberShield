@@ -3,8 +3,11 @@ from duckduckgo_search import DDGS
 # pip install -U g4f
 from g4f.client import Client
 import threading
+import sys
+import os
 
-# Important to note that only one query to GPT is available per request --> might need to integrate threading
+# Suppress stderr output by redirecting it to os.devnull
+sys.stderr = open(os.devnull, 'w')
 
 word = input("Query: ")
 add = input("Any other information: ")
@@ -36,7 +39,7 @@ if img == "y":
     for x in results:
         gptstring += ' '
         gptstring += str(x)
-    
+
     for x in images:
         refgptstr += ' '
         refgptstr += str(x)
@@ -74,12 +77,11 @@ def chat(finalpayload):
     if len(response.choices[0].message.content) > storenum:
         storenum = len(response.choices[0].message.content)
         storemsg = str(response.choices[0].message.content)
-    
-    
+
+
 # Threading implementation (submit multiple responses to chat gpt)
 for x in range(details):
     print("This will take a while, please wait...")
-    # to fix coro async runtime error in future
     t1 = threading.Thread(target=chat, args=(finalpayload,))
     t2 = threading.Thread(target=chat, args=(finalpayload,))
     t3 = threading.Thread(target=chat, args=(finalpayload,))
@@ -93,6 +95,3 @@ for x in range(details):
 
 print("")
 print(storemsg)
-
-# Special thanks to:
-# https://github.com/xtekky/gpt4free, for providing free gpt 3.5 api
