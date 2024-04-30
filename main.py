@@ -9,7 +9,7 @@ import os
 
 sys.stderr = open(os.devnull, 'w')
 
-class GetUserNamePassword(simpledialog.Dialog):
+class OSINT(simpledialog.Dialog):
     def body(self, master):
         tk.Label(master, text="Query:").grid(row=0)
         tk.Label(master, text="Any other information:").grid(row=1)
@@ -88,7 +88,7 @@ def chat(finalpayload, storemsg):
 def main():
     root = tk.Tk()
     root.withdraw()  # Hide the root window
-    d = GetUserNamePassword(root)
+    d = OSINT(root)
     if d.result:  # Check if the dialog returned a result
         word, add, img, details = d.result
         # Run the function in a separate thread
