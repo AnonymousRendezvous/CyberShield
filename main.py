@@ -1,9 +1,10 @@
 import tkinter as tk
 from tkinter import simpledialog
+# pip install duckduckgo_search
 from duckduckgo_search import DDGS
-import threading
 # pip install -U g4f
 from g4f.client import Client
+from g4f.Provider import OpenaiChat
 import sys
 import os
 
@@ -76,14 +77,12 @@ def payload_gen(word, add, img):
 
 storemsg = "h"
 def chat(finalpayload, storemsg):
-    client = Client()
+    client = Client(provider=OpenaiChat)
     storemsg = client.chat.completions.create(
-        model = "gpt-3.5-turbo",
+        model = "gpt-4",
         messages=[{"role": "user", "content": finalpayload}]
     )
     print(storemsg.choices[0].message.content) 
-    #accessing global values outside function
-
 
 def main():
     root = tk.Tk()
@@ -94,7 +93,10 @@ def main():
         # Run the function in a separate thread
         payload_gen(word, add, img)
         chat(finalpayload, storemsg)
-    else:
+    else: 
         print("failed")
 
 main()
+
+# Special thanks to:
+# https://github.com/xtekky/gpt4free, for providing free gpt 3.5 api
