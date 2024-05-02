@@ -15,28 +15,26 @@ class OSINT(simpledialog.Dialog):
         tk.Label(master, text="Query:").grid(row=0)
         tk.Label(master, text="Any other information:").grid(row=1)
         tk.Label(master, text="Do you want to trawl for images? (beta testing) y/n: ").grid(row=2)
-        tk.Label(master, text="How detailed do you want the report to be? (1-10):").grid(row=3)
 
         self.e0 = tk.Entry(master)
         self.e1 = tk.Entry(master)
         self.e2 = tk.Entry(master)
-        self.e3 = tk.Entry(master)
 
         self.e0.grid(row=0, column=1)
         self.e1.grid(row=1, column=1)
         self.e2.grid(row=2, column=1)
-        self.e3.grid(row=3, column=1)
 
     def apply(self):
         self.result = (
             self.e0.get(),
             self.e1.get(),
             self.e2.get(),
-            self.e3.get(),
         )
 
+# global variables
 finalpayload = ""
 storenum = 0
+storemsg = ""
 storemsg = ""
 
 def payload_gen(word, add, img):
@@ -48,7 +46,7 @@ def payload_gen(word, add, img):
     else:
         results = DDGS().text(new, max_results=50)
     global finalpayload
-    payload = f"If I gave you some information on someone, could you write me a comprehensive report on them?"
+    payload = f"If I gave you some information on someone, could you write me a comprehensive report on them that is as detailed as possible?"
     payload += f" Do note that the person's name is, {word}. Perhaps you could also create a web of people relating to {word} and provide ANY and ALL links where the information can be found."
     payload += "Do also see if you can extract basic information such as past and current education statuses, location and information from ANY accounts like their username or email."
     payload += f"Lastly, also note that {add}  Here is the data with links (to be included): \n."
@@ -75,7 +73,6 @@ def payload_gen(word, add, img):
         payload += " Data: " + gptstring
         finalpayload += payload
 
-storemsg = "h"
 def chat(finalpayload, storemsg):
     client = Client(provider=OpenaiChat)
     storemsg = client.chat.completions.create(
@@ -89,8 +86,8 @@ def main():
     root.withdraw()  # Hide the root window
     d = OSINT(root)
     if d.result:  # Check if the dialog returned a result
-        word, add, img, details = d.result
-        # Run the function in a separate thread
+        word, add, img = d.result
+        # Runs the function in a separate thread
         payload_gen(word, add, img)
         chat(finalpayload, storemsg)
     else: 
