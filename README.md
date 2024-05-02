@@ -38,7 +38,7 @@ Create new python file and type in the above commands in shell/terminal.
 python main.py
 ```
 
-Input any person's name under "Query:"
+Input any person's name under "Query:" (Please input the person's full name for better results)
 
 Input any additional information about the person under "Any other information: "
 
@@ -47,3 +47,5 @@ For "Any other information: ", type in complete sentences and don't use acronyms
 Type either y/n in the "Do you want to trawl for images?" parameter.
 
 Specify details and accuracy from 1-10. Do note that the higher the number, the slower the program but the higher the accuracy.
+
+A known issue is rate limit error. In this instance, refrain from inputting higher accuracy numbers and wait for a longer time (around 5 - 10 minutes) before submitting your query again.
