@@ -5,6 +5,7 @@ from duckduckgo_search import DDGS
 # pip install -U g4f
 from g4f.client import Client
 from g4f.Provider import OpenaiChat
+import requests, json
 import sys
 import os
 
@@ -15,20 +16,24 @@ class OSINT(simpledialog.Dialog):
         tk.Label(master, text="Query:").grid(row=0)
         tk.Label(master, text="Any other information:").grid(row=1)
         tk.Label(master, text="Do you want to trawl for images? (beta testing) y/n: ").grid(row=2)
+        tk.Label(master, text="Input your email address: ").grid(row=3)
 
         self.e0 = tk.Entry(master)
         self.e1 = tk.Entry(master)
         self.e2 = tk.Entry(master)
+        self.e3 = tk.Entry(master)
 
         self.e0.grid(row=0, column=1)
         self.e1.grid(row=1, column=1)
         self.e2.grid(row=2, column=1)
+        self.e3.grid(row=3, column=1)
 
     def apply(self):
         self.result = (
             self.e0.get(),
             self.e1.get(),
             self.e2.get(),
+            self.e3.get(),
         )
 
 # global variables
@@ -81,19 +86,32 @@ def chat(finalpayload, storemsg):
     )
     print(storemsg.choices[0].message.content) 
 
+def email_address(email):
+  url = "https://webapi.namescan.io/v1/freechecks/email/breaches"
+
+  payload={
+      "email": email
+  }
+  headers = {
+      'Content-Type': 'application/json'
+  }
+  response = requests.post(url, headers=headers, data=json.dumps(payload))
+  print(response.text)
+
 def main():
     root = tk.Tk()
     root.withdraw()  # Hide the root window
     d = OSINT(root)
     if d.result:  # Check if the dialog returned a result
-        word, add, img = d.result
+        word, add, img, email = d.result
         # Runs the function in a separate thread
         payload_gen(word, add, img)
         chat(finalpayload, storemsg)
+        email_address(email)
     else: 
         print("failed")
 
 main()
 
 # Special thanks to:
-# https://github.com/xtekky/gpt4free, for providing free gpt 3.5 api
+# https://github.com/xtekky/gpt4free, for providing free gpt 4 api
