@@ -4,11 +4,9 @@ An app that protects that has integrated WireGuard and automated OSINT to stop s
 
 ## Architecture
 
-Android and Windows GUI in Kotlin
+Android and Windows GUI in Kotlin/Tkinter
 
 ## Installation/Setup
-
-Currently only available in terminal. 
 
 Requires Python installed on any OS.
 
@@ -45,5 +43,7 @@ Input any additional information about the person under "Any other information: 
 For "Any other information: ", type in complete sentences and don't use acronyms, do also remember to spell out full nouns and watch your intensifiers. If no other information, simply press enter.
 
 Type either y/n in the "Do you want to trawl for images?" parameter.
+
+Enter your email under "Email: " parameter. (Don't worry, your email will not be stored)
 
 A known issue is rate limit error. In this instance, refrain from inputting higher accuracy numbers and wait for a longer time (around 5 - 10 minutes) before submitting your query again.
