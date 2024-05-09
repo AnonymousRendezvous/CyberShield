@@ -33,7 +33,7 @@ Create new python file and type in the above commands in shell/terminal.
 ## Usage
 
 ```
-python main.py
+python osint.py
 ```
 
 Input any person's name under "Query:" (Please input the person's full name for better results)
