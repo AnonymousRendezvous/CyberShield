@@ -4,12 +4,10 @@ from tkinter import simpledialog
 from duckduckgo_search import DDGS
 # pip install -U g4f
 from g4f.client import Client
-from g4f.Provider import OpenaiChat
+from g4f.Provider import Ecosia
 import requests, json
 import sys
 import os
-
-sys.stderr = open(os.devnull, 'w')
 
 class OSINT(simpledialog.Dialog):
     def body(self, master):
@@ -50,6 +48,7 @@ def payload_gen(word, add, img):
         images = DDGS().images(new, region="sg-en", max_results=25)
     else:
         results = DDGS().text(new, max_results=50)
+        print(results)
     global finalpayload
     payload = f"If I gave you some information on someone, could you write me a comprehensive report on them that is as detailed as possible?"
     payload += f" Do note that the person's name is, {word}. Perhaps you could also create a web of people relating to {word} and provide ANY and ALL links where the information can be found."
@@ -70,7 +69,7 @@ def payload_gen(word, add, img):
         payloadimg = f" Now, with the above data, I will provide you with some image links relating to {word}."
         payloadimg += f" Do filter through all the data and give me ANY relevant links. Here is the data: {refgptstr}."
         finalpayload += payload + " " + payloadimg
-    else:
+    else:   
         for x in results:
             gptstring += ' '
             gptstring += str(x)
@@ -79,9 +78,9 @@ def payload_gen(word, add, img):
         finalpayload += payload
 
 def chat(finalpayload, storemsg):
-    client = Client(provider=OpenaiChat)
+    client = Client(provider=Ecosia)
     storemsg = client.chat.completions.create(
-        model = "gpt-4",
+        model = "gpt-3.5-turbo",
         messages=[{"role": "user", "content": finalpayload}]
     )
     print(storemsg.choices[0].message.content) 
