@@ -4,16 +4,19 @@ from tkinter import simpledialog
 from duckduckgo_search import DDGS
 # pip install -U g4f
 from g4f.client import Client
-from g4f.Provider import Ecosia
+from g4f.Provider import HuggingChat
 import requests, json
-import sys
-import os
+
 
 class OSINT(simpledialog.Dialog):
+
     def body(self, master):
         tk.Label(master, text="Query:").grid(row=0)
         tk.Label(master, text="Any other information:").grid(row=1)
-        tk.Label(master, text="Do you want to trawl for images? (beta testing) y/n: ").grid(row=2)
+        tk.Label(
+            master,
+            text="Do you want to trawl for images? (beta testing) y/n: ").grid(
+                row=2)
         tk.Label(master, text="Input your email address: ").grid(row=3)
 
         self.e0 = tk.Entry(master)
@@ -34,11 +37,13 @@ class OSINT(simpledialog.Dialog):
             self.e3.get(),
         )
 
+
 # global variables
 finalpayload = ""
 storenum = 0
 storemsg = ""
 storemsg = ""
+
 
 def payload_gen(word, add, img):
     new = '"' + word + '"'
@@ -48,7 +53,6 @@ def payload_gen(word, add, img):
         images = DDGS().images(new, region="sg-en", max_results=25)
     else:
         results = DDGS().text(new, max_results=50)
-        print(results)
     global finalpayload
     payload = f"If I gave you some information on someone, could you write me a comprehensive report on them that is as detailed as possible?"
     payload += f" Do note that the person's name is, {word}. Perhaps you could also create a web of people relating to {word} and provide ANY and ALL links where the information can be found."
@@ -69,7 +73,7 @@ def payload_gen(word, add, img):
         payloadimg = f" Now, with the above data, I will provide you with some image links relating to {word}."
         payloadimg += f" Do filter through all the data and give me ANY relevant links. Here is the data: {refgptstr}."
         finalpayload += payload + " " + payloadimg
-    else:   
+    else:
         for x in results:
             gptstring += ' '
             gptstring += str(x)
@@ -77,25 +81,60 @@ def payload_gen(word, add, img):
         payload += " Data: " + gptstring
         finalpayload += payload
 
+
 def chat(finalpayload, storemsg):
-    client = Client(provider=Ecosia)
-    storemsg = client.chat.completions.create(
-        model = "gpt-3.5-turbo",
-        messages=[{"role": "user", "content": finalpayload}]
-    )
-    print(storemsg.choices[0].message.content) 
+    client = Client(provider=HuggingChat)
+    storemsg = client.chat.completions.create(model="command-r+",
+                                              messages=[{
+                                                  "role": "user",
+                                                  "content": finalpayload
+                                              }])
+    print(storemsg.choices[0].message.content)
+
+
+import requests
+import json
+
 
 def email_address(email):
-  url = "https://webapi.namescan.io/v1/freechecks/email/breaches"
+    url = "https://webapi.namescan.io/v1/freechecks/email/breaches"
 
-  payload={
-      "email": email
-  }
-  headers = {
-      'Content-Type': 'application/json'
-  }
-  response = requests.post(url, headers=headers, data=json.dumps(payload))
-  print(response.text)
+    payload = {"email": email}
+    headers = {'Content-Type': 'application/json'}
+    response = requests.post(url, headers=headers, data=json.dumps(payload))
+
+    if response.status_code == 200:
+        print()
+        print("Email Breaches: ")
+        print()
+        data = response.json()
+        breaches = data.get("breaches", [])
+        filtered_breaches = []
+
+        seen_titles = set()
+
+        for breach in breaches:
+            title = breach.get("title", "Unknown")
+            if title not in seen_titles:
+                seen_titles.add(title)
+                filtered_breaches.append({
+                    "Title":
+                    title,
+                    "Date":
+                    breach.get("date", "Unknown"),
+                    "Description":
+                    breach.get("description", "No description available"),
+                })
+
+        for breach in filtered_breaches:
+            print(f"Title: {breach['Title']}")
+            print(f"Date: {breach['Date']}")
+            print(f"Description: {breach['Description']}\n")
+    else:
+        print(
+            f"Error: Unable to fetch data (Status Code: {response.status_code})"
+        )
+
 
 def main():
     root = tk.Tk()
@@ -105,10 +144,13 @@ def main():
         word, add, img, email = d.result
         # Runs the function in a separate thread
         payload_gen(word, add, img)
+        print("Please wait a while...")
+        print()
         chat(finalpayload, storemsg)
         email_address(email)
-    else: 
+    else:
         print("failed")
+
 
 main()
 
