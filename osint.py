@@ -13,21 +13,21 @@ class OSINT(simpledialog.Dialog):
     def body(self, master):
         tk.Label(master, text="Query:").grid(row=0)
         tk.Label(master, text="Any other information:").grid(row=1)
-        tk.Label(
-            master,
-            text="Do you want to trawl for images? (beta testing) y/n: ").grid(
-                row=2)
+        tk.Label(master, text="Do you want to trawl for images? (beta testing) y/n: ").grid(row=2)
         tk.Label(master, text="Input your email address: ").grid(row=3)
+        tk.Label(master, text="Input your instagram username (beta testing): ").grid(row=4)
 
         self.e0 = tk.Entry(master)
         self.e1 = tk.Entry(master)
         self.e2 = tk.Entry(master)
         self.e3 = tk.Entry(master)
+        self.e4 = tk.Entry(master)
 
         self.e0.grid(row=0, column=1)
         self.e1.grid(row=1, column=1)
         self.e2.grid(row=2, column=1)
         self.e3.grid(row=3, column=1)
+        self.e4.grid(row=4, column=1)
 
     def apply(self):
         self.result = (
@@ -35,6 +35,7 @@ class OSINT(simpledialog.Dialog):
             self.e1.get(),
             self.e2.get(),
             self.e3.get(),
+            self.e4.get(),
         )
 
 
@@ -135,19 +136,35 @@ def email_address(email):
             f"Error: Unable to fetch data (Status Code: {response.status_code})"
         )
 
+def instagram_api(insta):
+
+	url = "https://instagram-scraper-api2.p.rapidapi.com/v1/info"
+
+	querystring = {"username_or_id_or_url": insta}
+
+	headers = {
+		"x-rapidapi-key": "7cef9caf7emshbcd7d852995df3cp114277jsn623179640e47",
+		"x-rapidapi-host": "instagram-scraper-api2.p.rapidapi.com"
+	}
+
+	response = requests.get(url, headers=headers, params=querystring)
+
+	print(response.json())
 
 def main():
     root = tk.Tk()
     root.withdraw()  # Hide the root window
     d = OSINT(root)
     if d.result:  # Check if the dialog returned a result
-        word, add, img, email = d.result
+        word, add, img, email, insta= d.result
         # Runs the function in a separate thread
         payload_gen(word, add, img)
         print("Please wait a while...")
         print()
         chat(finalpayload, storemsg)
         email_address(email)
+        # beta testing of instagram api
+        instagram_api(insta)
     else:
         print("failed")
 
@@ -156,3 +173,4 @@ main()
 
 # Special thanks to:
 # https://github.com/xtekky/gpt4free, for providing free gpt 4 api
+# rapidapi.com for providing free instagram trial api
