@@ -46,4 +46,9 @@ Type either y/n in the "Do you want to trawl for images?" parameter. (Beta testi
 
 Enter your email under "Email: " parameter. (Don't worry, your email will not be stored)
 
-A known issue is rate limit error. In this instance, refrain from inputting higher accuracy numbers and wait for a longer time (around 5 - 10 minutes) before submitting your query again.
+Enter your instagram username under the "Input your instagram username: " parameter. (Beta testing)
+
+## Additional Information
+
+As the current API only handles a maximum of 500 requests per month, while we are working out scalability issues, please use the osint.py file sparingly. 
+Another known issue is that the compilation rate is a little slow (2-3 minutes) so do bear with our program should it take a long time to load.
