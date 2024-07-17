@@ -3,10 +3,10 @@ from tkinter import simpledialog
 # pip install duckduckgo_search
 from duckduckgo_search import DDGS
 # pip install -U g4f
+import g4f
 from g4f.client import Client
-from g4f.Provider import HuggingChat
 import requests, json
-
+import time
 
 class OSINT(simpledialog.Dialog):
 
@@ -40,23 +40,27 @@ class OSINT(simpledialog.Dialog):
 
 
 # global variables
-finalpayload = ""
+payload = ""
+payload2 = ""
 storenum = 0
 storemsg = ""
-storemsg = ""
 
+messages = []
+client = Client(provider=g4f.Provider.MetaAI)
 
 def payload_gen(word, add, img):
+    global payload, payload2
     new = '"' + word + '"'
 
     if img == "y":
-        results = DDGS().text(new, max_results=25)
-        images = DDGS().images(new, region="sg-en", max_results=25)
+        #Beta testing for images
+        results = DDGS().text(new, max_results=4)
+        images = DDGS().images(new, region="sg-en", max_results=1)
     else:
-        results = DDGS().text(new, max_results=50)
-    global finalpayload
-    payload = f"If I gave you some information on someone, could you write me a comprehensive report on them that is as detailed as possible?"
-    payload += f" Do note that the person's name is, {word}. Perhaps you could also create a web of people relating to {word} and provide ANY and ALL links where the information can be found."
+        results = DDGS().text(new, max_results=5)
+
+    payload = f"Write me a comprehensive report on a person that is as detailed as possible?"
+    payload += f" Do note that the person's name is, {word}. Perhaps you could also create a web of people relating to them and provide ANY and ALL links where the information can be found."
     payload += "Do also see if you can extract basic information such as past and current education statuses, location and information from ANY accounts like their username or email."
     payload += f"Lastly, also note that {add}  Here is the data with links (to be included): \n."
     gptstring = ""
@@ -70,31 +74,34 @@ def payload_gen(word, add, img):
             refgptstr += ' '
             refgptstr += str(x)
 
-        payload += " Data: " + gptstring
+        payload2 += " Data: " + gptstring
         payloadimg = f" Now, with the above data, I will provide you with some image links relating to {word}."
         payloadimg += f" Do filter through all the data and give me ANY relevant links. Here is the data: {refgptstr}."
-        finalpayload += payload + " " + payloadimg
+        payload2 += " " + payloadimg
     else:
         for x in results:
             gptstring += ' '
             gptstring += str(x)
 
-        payload += " Data: " + gptstring
-        finalpayload += payload
+        payload2 += " Data: " + gptstring
+        
 
-
-def chat(finalpayload, storemsg):
-    client = Client(provider=HuggingChat)
-    storemsg = client.chat.completions.create(model="command-r+",
-                                              messages=[{
-                                                  "role": "user",
-                                                  "content": finalpayload
-                                              }])
-    print(storemsg.choices[0].message.content)
-
-
-import requests
-import json
+def chat(payload1, payload2):
+   global messages
+   messages.append({"role": "user", "content": payload1})
+   response = client.chat.completions.create(
+            messages=messages,
+            model="Meta-Llama-3-70b-instruct",
+        )
+   gpt_response = response.choices[0].message.content
+#    print(f"Bot: {gpt_response}")
+   messages.append({"role": "assistant", "content": payload2})
+   response = client.chat.completions.create(
+            messages=messages,
+            model="Meta-Llama-3-70b-instruct",
+        )
+   gpt_response = response.choices[0].message.content
+   print(gpt_response)
 
 
 def email_address(email):
@@ -158,14 +165,19 @@ def main():
     if d.result:  # Check if the dialog returned a result
         word, add, img, email, insta= d.result
         # Runs the function in a separate thread
+        start_time = time.time()
         payload_gen(word, add, img)
         print("Please wait a while...")
         print()
-        chat(finalpayload, storemsg)
+        chat(payload, payload2)
         email_address(email)
         # beta testing of instagram api
-        instagram_api(insta)
-    else:
+        # instagram_api(insta)
+        end_time = time.time()
+        time_taken = end_time - start_time
+        print()
+        print("Request completed in " + str(time_taken) + "s")
+    else:   
         print("failed")
 
 
@@ -173,4 +185,3 @@ main()
 
 # Special thanks to:
 # https://github.com/xtekky/gpt4free, for providing free gpt 4 api
-# rapidapi.com for providing free instagram trial api
