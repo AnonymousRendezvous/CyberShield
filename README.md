@@ -29,6 +29,9 @@ cd CyberShield
 pip install -Ur requirements.txt
 ```
 
+You also need to install tkinter for your respective OS if not previously installed.
+(mostly linux and windows based distributions)
+
 ## Usage
 
 ```
@@ -36,11 +39,13 @@ python osint.py
 ```
 (Currently only the OSINT feature is working)
 
-Input any person's name under "Query:" (Please input the person's full name for better results)
+Input any person's full name under "Query:" (Please input the person's full name for better results)
 
 Input any additional information about the person under "Any other information: "
 
-For "Any other information: ", type in complete sentences and don't use acronyms, do also remember to spell out full nouns and watch your intensifiers. Leave this option blank if you have no additional information.
+For "Any other information: ", type in complete sentences and don't use acronyms,
+do also remember to spell out full nouns and watch your intensifiers. 
+Leave this option blank if you have no additional information.
 
 Type either y/n in the "Do you want to trawl for images?" parameter. (Beta testing)
 
@@ -50,5 +55,7 @@ Enter your instagram username under the "Input your instagram username: " parame
 
 ## Additional Information
 
-As the current API only handles a maximum of 500 requests per month, while we are working out scalability issues, please use the osint.py file sparingly. 
-Another known issue is that the compilation rate is a little slow (2-3 minutes) so do bear with our program should it take a long time to load.
+As the current API only handles a maximum of 500 requests per month, while we are working out scalability issues, 
+please use the osint.py file sparingly. 
+Another known issue is that the compilation rate is a little slow (2-3 minutes) 
+so do bear with our program should it take a long time to load.
