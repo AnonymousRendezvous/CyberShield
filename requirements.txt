@@ -1,4 +1,4 @@
-duckduckgo_search==6.1.12
+duckduckgo_search==6.2.1
 g4f==0.3.2.2
 requests==2.32.3
 curl-cffi==0.7.1
