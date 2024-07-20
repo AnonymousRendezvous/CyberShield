@@ -42,14 +42,16 @@ class OSINT(simpledialog.Dialog):
 # global variables
 payload = ""
 payload2 = ""
-storenum = 0
-storemsg = ""
+payload3 = ""
 
 messages = []
+
+# g4f client provider
 client = Client(provider=g4f.Provider.MetaAI)
 
+
 def payload_gen(word, add, img):
-    global payload, payload2
+    global payload, payload2, payload3
     new = '"' + word + '"'
 
     if img == "y":
@@ -57,13 +59,15 @@ def payload_gen(word, add, img):
         results = DDGS().text(new, max_results=4)
         images = DDGS().images(new, region="sg-en", max_results=1)
     else:
-        results = DDGS().text(new, max_results=5)
+        results = DDGS().text(new, region="sg-en:",max_results=10)
+        print("Results found: " + str(len(results)))
 
     payload = f"Write me a comprehensive report on a person that is as detailed as possible?"
     payload += f" Do note that the person's name is, {word}. Perhaps you could also create a web of people relating to them and provide ANY and ALL links where the information can be found."
     payload += "Do also see if you can extract basic information such as past and current education statuses, location and information from ANY accounts like their username or email."
     payload += f"Lastly, also note that {add}  Here is the data with links (to be included): \n."
     gptstring = ""
+    gptstring2 = ""
     refgptstr = ""
     if img == "y":
         for x in results:
@@ -79,14 +83,22 @@ def payload_gen(word, add, img):
         payloadimg += f" Do filter through all the data and give me ANY relevant links. Here is the data: {refgptstr}."
         payload2 += " " + payloadimg
     else:
-        for x in results:
+        # Taking elements 0-4 in results list 
+        for x in results[1:6]:
             gptstring += ' '
             gptstring += str(x)
+        # Taking elements 5-9 in results list
+        for y in results[5:11]:
+            gptstring2 += ' '
+            gptstring2 += str(y)
 
+        # print(gptstring)
+        # print(gptstring2)
         payload2 += " Data: " + gptstring
+        payload3 += " Here is some more data to add onto the the report. Remember to KEEP your previous response and ADD ON! Data: " + gptstring2
         
 
-def chat(payload1, payload2):
+def chat(payload1, payload2, payload3):
    global messages
    messages.append({"role": "user", "content": payload1})
    response = client.chat.completions.create(
@@ -94,8 +106,15 @@ def chat(payload1, payload2):
             model="Meta-Llama-3-70b-instruct",
         )
    gpt_response = response.choices[0].message.content
-#    print(f"Bot: {gpt_response}")
+#    print(gpt_response)
    messages.append({"role": "assistant", "content": payload2})
+   response = client.chat.completions.create(
+            messages=messages,
+            model="Meta-Llama-3-70b-instruct",
+        )
+   gpt_response = response.choices[0].message.content
+#    print(gpt_response)
+   messages.append({"role": "assistant", "content": payload3})
    response = client.chat.completions.create(
             messages=messages,
             model="Meta-Llama-3-70b-instruct",
@@ -126,12 +145,9 @@ def email_address(email):
             if title not in seen_titles:
                 seen_titles.add(title)
                 filtered_breaches.append({
-                    "Title":
-                    title,
-                    "Date":
-                    breach.get("date", "Unknown"),
-                    "Description":
-                    breach.get("description", "No description available"),
+                    "Title": title,
+                    "Date": breach.get("date", "Unknown"), 
+                    "Description": breach.get("description", "No description available"),
                 })
 
         for breach in filtered_breaches:
@@ -164,12 +180,12 @@ def main():
     d = OSINT(root)
     if d.result:  # Check if the dialog returned a result
         word, add, img, email, insta= d.result
-        # Runs the function in a separate thread
         start_time = time.time()
+
         payload_gen(word, add, img)
         print("Please wait a while...")
         print()
-        chat(payload, payload2)
+        chat(payload, payload2, payload3)
         email_address(email)
         # beta testing of instagram api
         # instagram_api(insta)
@@ -178,7 +194,7 @@ def main():
         print()
         print("Request completed in " + str(time_taken) + "s")
     else:   
-        print("failed")
+        print("Please input the necessary information.")
 
 
 main()
