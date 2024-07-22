@@ -55,7 +55,6 @@ Enter your instagram username under the "Input your instagram username: " parame
 
 ## Additional Information
 
-As the current API only handles a maximum of 500 requests per month, while we are working out scalability issues, 
-please use the osint.py file sparingly. 
+*Removed Instagram username search as still under beta testing and too volatile. (For now)
 Another known issue is that the compilation rate is a little slow (2-3 minutes) 
 so do bear with our program should it take a long time to load.
