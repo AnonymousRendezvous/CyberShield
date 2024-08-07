@@ -160,19 +160,64 @@ def email_address(email):
         )
 
 def instagram_api(insta):
+def instagram_api(insta):
+    url = "https://instagram-scraper-api2.p.rapidapi.com/v1/info"
+    querystring = {"username_or_id_or_url": insta}
+    headers = {
+        "x-rapidapi-key": "7cef9caf7emshbcd7d852995df3cp114277jsn623179640e47",
+        "x-rapidapi-host": "instagram-scraper-api2.p.rapidapi.com"
+    }
 
-	url = "https://instagram-scraper-api2.p.rapidapi.com/v1/info"
+    response = requests.get(url, headers=headers, params=querystring)
+    data = response.json().get('data', {})
 
-	querystring = {"username_or_id_or_url": insta}
+    # Basic Profile Information
+    username = data.get('username', 'N/A')
+    full_name = data.get('full_name', 'N/A')
+    is_private = data.get('is_private', False)
+    is_verified = data.get('is_verified', False)
+    follower_count = data.get('follower_count', 'N/A')
+    following_count = data.get('following_count', 'N/A')
+    media_count = data.get('media_count', 'N/A')
+    profile_pic_url = data.get('profile_pic_url', '')
+    bio = data.get('biography', '')
+    external_url = data.get('external_url', '')
 
-	headers = {
-		"x-rapidapi-key": "7cef9caf7emshbcd7d852995df3cp114277jsn623179640e47",
-		"x-rapidapi-host": "instagram-scraper-api2.p.rapidapi.com"
-	}
+    # Print Profile Summary
+    print(f"Instagram Profile Summary\n{'-'*30}")
+    print(f"Username: {username}")
+    print(f"Full Name: {full_name}")
+    print(f"Is Private: {'Yes' if is_private else 'No'}")
+    print(f"Is Verified: {'Yes' if is_verified else 'No'}")
+    print(f"Follower Count: {follower_count}")
+    print(f"Following Count: {following_count}")
+    print(f"Media Count: {media_count}")
+    print(f"Profile Picture URL: {profile_pic_url}\n")
 
-	response = requests.get(url, headers=headers, params=querystring)
+    # Print Biography and External Link
+    print(f"Biography:\n{bio if bio else '(No Bio)'}")
+    print(f"External URL: {external_url if external_url else '(No External URL)'}\n")
 
-	print(response.json())
+    # Additional Information
+    print("Additional Information\n" + '-'*30)
+    guides_available = data.get('has_guides', False)
+    fundraisers = data.get('active_standalone_fundraisers', {}).get('total_count', 0)
+    downloads_enabled = data.get('third_party_downloads_enabled', 0)
+    
+    print(f"Guides Available: {'Yes' if guides_available else 'No'}")
+    print(f"Standalone Fundraisers: {fundraisers}")
+    print(f"Third Party Downloads Enabled: {'Yes' if downloads_enabled else 'No'}\n")
+    
+    # Location Data
+    location_data = data.get('location_data', {})
+    if location_data:
+        city_name = location_data.get('city_name', 'N/A')
+        zip_code = location_data.get('zip', 'N/A')
+        latitude = location_data.get('latitude', 'N/A')
+        longitude = location_data.get('longitude', 'N/A')
+        print(f"Location Data:\n City: {city_name}\n Zip Code: {zip_code}\n Latitude: {latitude}\n Longitude: {longitude}\n")
+    else:
+        print("Location Data: Not Provided")
 
 def main():
     root = tk.Tk()
