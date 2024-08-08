@@ -12,7 +12,7 @@ class OSINT(simpledialog.Dialog):
 
     def body(self, master):
         tk.Label(master, text="Query:").grid(row=0)
-        tk.Label(master, text="Any other information:").grid(row=1)
+        tk.Label(master, text="Enter a keyword associated with the person:").grid(row=1)
         tk.Label(master, text="Do you want to trawl for images? (beta testing) y/n: ").grid(row=2)
         tk.Label(master, text="Input your email address: ").grid(row=3)
         tk.Label(master, text="Input your instagram username (beta testing): ").grid(row=4)
@@ -53,21 +53,23 @@ client = Client(provider=g4f.Provider.MetaAI)
 def payload_gen(word, add, img):
     global payload, payload2, payload3
     new = '"' + word + '"'
+    nadd = word + " " + add
 
     if img == "y":
         #Beta testing for images
-        results = DDGS().text(new, max_results=4)
-        images = DDGS().images(new, region="sg-en", max_results=1)
+        results = DDGS().text(new, max_results=3)
+        images = DDGS().images(new, region="sg-en", max_results=2)
     else:
-        results = DDGS().text(new, region="sg-en:",max_results=10)
-        print("Results found: " + str(len(results)))
-
+        results = DDGS().text(new, region="sg-en:",max_results=9)
+        addresults = DDGS().text(nadd, max_results=3)
+        print("Results found: " + str(len(results) + len(addresults)))
     payload = f"Write me a comprehensive report on a person that is as detailed as possible?"
     payload += f" Do note that the person's name is, {word}. Perhaps you could also create a web of people relating to them and provide ANY and ALL links where the information can be found."
     payload += "Do also see if you can extract basic information such as past and current education statuses, location and information from ANY accounts like their username or email."
-    payload += f"Lastly, also note that {add}  Here is the data with links (to be included): \n."
+    payload += f" Here is the data with links (to be included): \n."
     gptstring = ""
     gptstring2 = ""
+    gptstring3 = ""
     refgptstr = ""
     if img == "y":
         for x in results:
@@ -83,19 +85,29 @@ def payload_gen(word, add, img):
         payloadimg += f" Do filter through all the data and give me ANY relevant links. Here is the data: {refgptstr}."
         payload2 += " " + payloadimg
     else:
+        # Check for duplicates in both lists
+        for item in addresults[:]:
+            if item in results:
+                addresults.remove(item)
         # Taking elements 0-4 in results list 
         for x in results[1:6]:
             gptstring += ' '
             gptstring += str(x)
         # Taking elements 5-9 in results list
-        for y in results[5:11]:
+        for y in results[5:10]:
             gptstring2 += ' '
             gptstring2 += str(y)
-
-        # print(gptstring)
-        # print(gptstring2)
+        for z in addresults:
+            gptstring3 += ' '
+            gptstring3 += str(z)
+        # Debugging DDGS
+        if word.lower() == "debug" or add.lower() == "debug" or img.lower() == "debug":
+            print(gptstring)
+            print(gptstring2)
+            print(gptstring3)
+        
         payload2 += " Data: " + gptstring
-        payload3 += " Here is some more data to add onto the the report. Remember to KEEP your previous response and ADD ON! Data: " + gptstring2
+        payload3 += " Here is some more data to add onto the the report. Remember to KEEP your previous response and ADD ON, being as verbose as possible! Data: " + gptstring2 + gptstring3
         
 
 def chat(payload1, payload2, payload3):
@@ -159,7 +171,8 @@ def email_address(email):
             f"Error: Unable to fetch data (Status Code: {response.status_code})"
         )
 
-def instagram_api(insta):
+import requests
+
 def instagram_api(insta):
     url = "https://instagram-scraper-api2.p.rapidapi.com/v1/info"
     querystring = {"username_or_id_or_url": insta}
@@ -219,6 +232,7 @@ def instagram_api(insta):
     else:
         print("Location Data: Not Provided")
 
+
 def main():
     root = tk.Tk()
     root.withdraw()  # Hide the root window
@@ -232,7 +246,6 @@ def main():
         print()
         chat(payload, payload2, payload3)
         email_address(email)
-        # beta testing of instagram api
         # instagram_api(insta)
         end_time = time.time()
         time_taken = end_time - start_time
