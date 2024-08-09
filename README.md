@@ -41,7 +41,7 @@ python osint.py
 
 Input any person's full name under "Query:" (Please input the person's full name for better results)
 
-Input any additional information about the person under "Any other information: "
+Input a known keyword associated with the person under "Any other information: ". If nothing, simply leave it blank.
 
 For "Any other information: ", type in complete sentences and don't use acronyms,
 do also remember to spell out full nouns and watch your intensifiers. 
@@ -51,7 +51,7 @@ Type either y/n in the "Do you want to trawl for images?" parameter. (Beta testi
 
 Enter your email under "Email: " parameter. (Don't worry, your email will not be stored)
 
-Enter your instagram username under the "Input your instagram username: " parameter. (Beta testing)
+Enter your instagram username under the "Input your instagram username: " parameter. (Beta testing, to use the API, uncomment the line of code in main.)
 
 ## Additional Information
 
