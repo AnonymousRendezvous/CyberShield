@@ -37,7 +37,6 @@ You also need to install tkinter for your respective OS if not previously instal
 ```
 python osint.py
 ```
-(Currently only the OSINT feature is working)
 
 Input any person's full name under "Query:" (Please input the person's full name for better results)
 
@@ -52,6 +51,20 @@ Type either y/n in the "Do you want to trawl for images?" parameter. (Beta testi
 Enter your email under "Email: " parameter. (Don't worry, your email will not be stored)
 
 Enter your instagram username under the "Input your instagram username: " parameter. (Beta testing, to use the API, uncomment the line of code in main.)
+
+```
+python webcheck.py
+```
+
+Input the website you would like to check in the query box.
+
+
+```
+replosint.py
+```
+For those who wish to use a web interface (replit) to run code due to convenience. Please use the above code and follow the instructions from osint.py.
+
+Do note that this is ONLY compatible with Replit and was made specifically to address issues in replit.
 
 ## Additional Information
 
