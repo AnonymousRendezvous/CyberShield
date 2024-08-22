@@ -1,7 +1,9 @@
 import tkinter as tk
 from tkinter import simpledialog
+
 # pip install duckduckgo_search
 from duckduckgo_search import DDGS
+
 # pip install -U g4f
 import g4f
 from g4f.client import Client
@@ -10,20 +12,12 @@ import time
 
 
 class OSINT(simpledialog.Dialog):
-
     def body(self, master):
         tk.Label(master, text="Query:").grid(row=0)
-        tk.Label(
-            master,
-            text="Enter a keyword associated with the person:").grid(row=1)
-        tk.Label(
-            master,
-            text="Do you want to trawl for images? (beta testing) y/n: ").grid(
-                row=2)
+        tk.Label(master, text="Enter a keyword associated with the person:").grid(row=1)
+        tk.Label(master, text="Do you want to trawl for images? (beta testing) y/n: ").grid(row=2)
         tk.Label(master, text="Input your email address: ").grid(row=3)
-        tk.Label(
-            master,
-            text="Input your instagram username (beta testing): ").grid(row=4)
+        tk.Label(master, text="Input your instagram username (beta testing): ").grid(row=4)
 
         self.e0 = tk.Entry(master)
         self.e1 = tk.Entry(master)
@@ -64,7 +58,7 @@ def payload_gen(word, add, img):
     nadd = word + " " + add
 
     if img == "y":
-        #Beta testing for images
+        # Beta testing for images
         results = DDGS().text(new, max_results=3)
         images = DDGS().images(new, region="sg-en", max_results=2)
     else:
@@ -81,11 +75,11 @@ def payload_gen(word, add, img):
     refgptstr = ""
     if img == "y":
         for x in results:
-            gptstring += ' '
+            gptstring += " "
             gptstring += str(x)
 
         for x in images:
-            refgptstr += ' '
+            refgptstr += " "
             refgptstr += str(x)
 
         payload2 += " Data: " + gptstring
@@ -99,24 +93,27 @@ def payload_gen(word, add, img):
                 addresults.remove(item)
         # Taking elements 0-4 in results list
         for x in results[1:6]:
-            gptstring += ' '
+            gptstring += " "
             gptstring += str(x)
         # Taking elements 5-9 in results list
         for y in results[5:10]:
-            gptstring2 += ' '
+            gptstring2 += " "
             gptstring2 += str(y)
         for z in addresults:
-            gptstring3 += ' '
+            gptstring3 += " "
             gptstring3 += str(z)
         # Debugging DDGS
-        if word.lower() == "debug" or add.lower() == "debug" or img.lower(
-        ) == "debug":
+        if word.lower() == "debug" or add.lower() == "debug" or img.lower() == "debug":
             print(gptstring)
             print(gptstring2)
             print(gptstring3)
 
         payload2 += " Data: " + gptstring + gptstring2
-        payload3 += " Here is some more data to add onto the the report in YOUR previous response. Remember to KEEP your previous response and ADD ON, being as verbose as possible! Data: " + gptstring2 + gptstring3
+        payload3 += (
+            " Here is some more data to add onto the the report in YOUR previous response. Remember to KEEP your previous response and ADD ON, being as verbose as possible! Data: "
+            + gptstring2
+            + gptstring3
+        )
 
 
 def chat(payload1, payload2, payload3):
@@ -148,7 +145,7 @@ def email_address(email):
     url = "https://webapi.namescan.io/v1/freechecks/email/breaches"
 
     payload = {"email": email}
-    headers = {'Content-Type': 'application/json'}
+    headers = {"Content-Type": "application/json"}
     response = requests.post(url, headers=headers, data=json.dumps(payload))
 
     if response.status_code == 200:
@@ -165,23 +162,20 @@ def email_address(email):
             title = breach.get("title", "Unknown")
             if title not in seen_titles:
                 seen_titles.add(title)
-                filtered_breaches.append({
-                    "Title":
-                    title,
-                    "Date":
-                    breach.get("date", "Unknown"),
-                    "Description":
-                    breach.get("description", "No description available"),
-                })
+                filtered_breaches.append(
+                    {
+                        "Title": title,
+                        "Date": breach.get("date", "Unknown"),
+                        "Description": breach.get("description", "No description available"),
+                    }
+                )
 
         for breach in filtered_breaches:
             print(f"Title: {breach['Title']}")
             print(f"Date: {breach['Date']}")
             print(f"Description: {breach['Description']}\n")
     else:
-        print(
-            f"Error: Unable to fetch data (Status Code: {response.status_code})"
-        )
+        print(f"Error: Unable to fetch data (Status Code: {response.status_code})")
 
 
 def instagram_api(insta):
@@ -189,23 +183,23 @@ def instagram_api(insta):
     querystring = {"username_or_id_or_url": insta}
     headers = {
         "x-rapidapi-key": "7cef9caf7emshbcd7d852995df3cp114277jsn623179640e47",
-        "x-rapidapi-host": "instagram-scraper-api2.p.rapidapi.com"
+        "x-rapidapi-host": "instagram-scraper-api2.p.rapidapi.com",
     }
 
     response = requests.get(url, headers=headers, params=querystring)
-    data = response.json().get('data', {})
+    data = response.json().get("data", {})
 
     # Basic Profile Information
-    username = data.get('username', 'N/A')
-    full_name = data.get('full_name', 'N/A')
-    is_private = data.get('is_private', False)
-    is_verified = data.get('is_verified', False)
-    follower_count = data.get('follower_count', 'N/A')
-    following_count = data.get('following_count', 'N/A')
-    media_count = data.get('media_count', 'N/A')
-    profile_pic_url = data.get('profile_pic_url', '')
-    bio = data.get('biography', '')
-    external_url = data.get('external_url', '')
+    username = data.get("username", "N/A")
+    full_name = data.get("full_name", "N/A")
+    is_private = data.get("is_private", False)
+    is_verified = data.get("is_verified", False)
+    follower_count = data.get("follower_count", "N/A")
+    following_count = data.get("following_count", "N/A")
+    media_count = data.get("media_count", "N/A")
+    profile_pic_url = data.get("profile_pic_url", "")
+    bio = data.get("biography", "")
+    external_url = data.get("external_url", "")
 
     # Print Profile Summary
     print(f"Instagram Profile Summary\n{'-'*30}")
@@ -220,33 +214,26 @@ def instagram_api(insta):
 
     # Print Biography and External Link
     print(f"Biography:\n{bio if bio else '(No Bio)'}")
-    print(
-        f"External URL: {external_url if external_url else '(No External URL)'}\n"
-    )
+    print(f"External URL: {external_url if external_url else '(No External URL)'}\n")
 
     # Additional Information
-    print("Additional Information\n" + '-' * 30)
-    guides_available = data.get('has_guides', False)
-    fundraisers = data.get('active_standalone_fundraisers',
-                           {}).get('total_count', 0)
-    downloads_enabled = data.get('third_party_downloads_enabled', 0)
+    print("Additional Information\n" + "-" * 30)
+    guides_available = data.get("has_guides", False)
+    fundraisers = data.get("active_standalone_fundraisers", {}).get("total_count", 0)
+    downloads_enabled = data.get("third_party_downloads_enabled", 0)
 
     print(f"Guides Available: {'Yes' if guides_available else 'No'}")
     print(f"Standalone Fundraisers: {fundraisers}")
-    print(
-        f"Third Party Downloads Enabled: {'Yes' if downloads_enabled else 'No'}\n"
-    )
+    print(f"Third Party Downloads Enabled: {'Yes' if downloads_enabled else 'No'}\n")
 
     # Location Data
-    location_data = data.get('location_data', {})
+    location_data = data.get("location_data", {})
     if location_data:
-        city_name = location_data.get('city_name', 'N/A')
-        zip_code = location_data.get('zip', 'N/A')
-        latitude = location_data.get('latitude', 'N/A')
-        longitude = location_data.get('longitude', 'N/A')
-        print(
-            f"Location Data:\n City: {city_name}\n Zip Code: {zip_code}\n Latitude: {latitude}\n Longitude: {longitude}\n"
-        )
+        city_name = location_data.get("city_name", "N/A")
+        zip_code = location_data.get("zip", "N/A")
+        latitude = location_data.get("latitude", "N/A")
+        longitude = location_data.get("longitude", "N/A")
+        print(f"Location Data:\n City: {city_name}\n Zip Code: {zip_code}\n Latitude: {latitude}\n Longitude: {longitude}\n")
     else:
         print("Location Data: Not Provided")
 

@@ -1,22 +1,20 @@
-import requests, json
-# pip install beautifulsoup4
-from bs4 import BeautifulSoup
+import requests
+from rich.progress import track
 
-website = input("Website: ")
+CHARS_PER_SITE = 10000
 
-def linkchecker(website):
-    url = website
-    reqs = requests.get(url)
-    soup = BeautifulSoup(reqs.text, 'html.parser')
+bad = []
+with open("bad", "r", encoding="utf-8") as f:
+    for line in f:
+        bad.append("http://" + line.strip())
 
-    urls = []
-    for link in soup.find_all('a'):
-        print(link.get('href'))
-
-def authentication(website):
-    auth = str(website)
-    for x in auth:
-        if x == "affiliate":
-            print("hi")
-
-linkchecker(website)
+for u in track(bad):
+    print(u)
+    try:
+        r = requests.get(u)
+    except Exception:
+        continue
+    if len(r.text) > CHARS_PER_SITE:
+        print(r.text[:CHARS_PER_SITE])
+    else:
+        print(r.text)
