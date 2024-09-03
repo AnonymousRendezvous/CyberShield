@@ -10,6 +10,12 @@ from g4f.client import Client
 import requests, json
 import time
 import httpx
+import sys
+import os
+
+
+# Suppress stderr output by redirecting it to os.devnull
+sys.stderr = open(os.devnull, 'w')
 
 class OSINT(simpledialog.Dialog):
 
