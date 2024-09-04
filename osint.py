@@ -89,7 +89,7 @@ def extract_text_from_website(url):
             limited_text = cleaned_text[:500]
 
             return limited_text
-
+    # Error handling
     except httpx.HTTPStatusError as e:
         return f"HTTP Error: {e}"
     except httpx.RequestError as e:
@@ -175,6 +175,7 @@ def payload_gen(word, add, img):
         )
         payloads.append(payload)
         payloads.append(payload2)
+        # Link payload generation
         for x in range(len(http)):
             key_content = extract_text_from_website(http[x])
             links = (
@@ -194,6 +195,16 @@ def chat(payloads):
     messages = []  # Initialize the message history
 
     for i, payload in enumerate(payloads):
+        # Add tracking message
+        if i == 0:
+            print("Setting things up... " + str(i) + "/" + str(len(payloads)))
+        elif i == 1:
+            print("Gathering information... " + str(i) + "/" + str(len(payloads)))
+        elif i == len(payloads) - 1:
+            print("Almost there... " + str(i) + "/" + str(len(payloads)))
+        else:
+            print("Generating report... " + str(i) + "/" + str(len(payloads)))
+
         # Add user message
         messages.append({"role": "user", "content": payload})
 
@@ -203,7 +214,8 @@ def chat(payloads):
             model="Meta-Llama-3-70b-instruct",
         )
         gpt_response = response.choices[0].message.content
-        # print(gpt_response)
+        # Uncomment code to see process generation
+        print(gpt_response)
 
         # Print last AI response
         if i == len(payloads) - 1:
@@ -246,6 +258,9 @@ def email_address(email):
             print(f"Description: {breach['Description']}\n")
     else:
         print(f"Error: Unable to fetch data (Status Code: {response.status_code})")
+        if str(response.status_code) == "400":
+            print("Please fill in the email for checking!")
+
 
 
 def instagram_api(insta):
