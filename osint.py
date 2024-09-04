@@ -1,14 +1,19 @@
 import json
+import os
+import sys
 import time
 import tkinter as tk
 from tkinter import simpledialog
 
-# pip install -U g4f
 import g4f
+import httpx
 import requests
-# pip install duckduckgo_search
+from bs4 import BeautifulSoup
 from duckduckgo_search import DDGS
 from g4f.client import Client
+
+# Suppress stderr output by redirecting it to os.devnull
+sys.stderr = open(os.devnull, "w")
 
 
 class OSINT(simpledialog.Dialog):
@@ -45,15 +50,54 @@ class OSINT(simpledialog.Dialog):
 payload = ""
 payload2 = ""
 payload3 = ""
+payloads = []
 
 messages = []
+http = []
 
 # g4f client provider
 client = Client(provider=g4f.Provider.MetaAI)
 
 
+def extract_text_from_website(url):
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+        }
+
+        # Use httpx with cookies enabled and follow redirects (cookie interference with g4f library)
+        with httpx.Client(headers=headers, follow_redirects=True) as client:
+            response = client.get(url)
+            response.raise_for_status()
+
+            # Parse HTML content using BeautifulSoup
+            soup = BeautifulSoup(response.content, "html.parser")
+
+            # Remove script, style, and other non-content elements
+            for element in soup(["script", "style", "header", "footer", "nav", "aside"]):
+                element.decompose()
+
+            # Extract text from remaining elements
+            text = soup.get_text(separator=" ", strip=True)
+
+            # Clean up the text
+            lines = (line.strip() for line in text.splitlines())
+            chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+            cleaned_text = "\n".join(chunk for chunk in chunks if chunk)
+
+            # Limit the text to 500 characters
+            limited_text = cleaned_text[:500]
+
+            return limited_text
+
+    except httpx.HTTPStatusError as e:
+        return f"HTTP Error: {e}"
+    except httpx.RequestError as e:
+        return f"Request Error: {e}"
+
+
 def payload_gen(word, add, img):
-    global payload, payload2, payload3
+    global payload, payload2, payload3, http
     new = '"' + word + '"'
     nadd = word + " " + add
 
@@ -62,17 +106,18 @@ def payload_gen(word, add, img):
         results = DDGS().text(new, max_results=3)
         images = DDGS().images(new, region="sg-en", max_results=2)
     else:
-        results = DDGS().text(new, region="sg-en:", max_results=9)
+        results = DDGS().text(new, max_results=9)
         addresults = DDGS().text(nadd, max_results=3)
-        print("Results found: " + str(len(results) + len(addresults)))
+
     payload = f"Write me a comprehensive report on a person that is as detailed as possible?"
     payload += f" Do note that the person's name is, {word}. Perhaps you could also create a web of people relating to them and provide ANY and ALL links where the information can be found."
     payload += "Do also see if you can extract basic information such as past and current education statuses, location and information from ANY accounts like their username or email."
-    payload += f" Here is the data with links (to be included): \n."
+    payload += f" Here is the data with links, do remember to INCLUDE AND NUMBER THE LINKS at the bottom: \n"
     gptstring = ""
     gptstring2 = ""
     gptstring3 = ""
     refgptstr = ""
+
     if img == "y":
         for x in results:
             gptstring += " "
@@ -84,7 +129,7 @@ def payload_gen(word, add, img):
 
         payload2 += " Data: " + gptstring
         payloadimg = f" Now, with the above data, I will provide you with some image links relating to {word}."
-        payloadimg += f" Do filter through all the data and give me ANY relevant links. Here is the data: {refgptstr}."
+        payloadimg += f" Do filter through all the data and give me ALL relevant links. Here is the data: {refgptstr}."
         payload2 += " " + payloadimg
     else:
         # Check for duplicates in both lists
@@ -93,52 +138,77 @@ def payload_gen(word, add, img):
                 addresults.remove(item)
         # Taking elements 0-4 in results list
         for x in results[1:6]:
-            gptstring += " "
-            gptstring += str(x)
+            gptstring += " " + str(x)
+            if "href" in x:
+                http.append(x["href"])
+
         # Taking elements 5-9 in results list
         for y in results[5:10]:
-            gptstring2 += " "
-            gptstring2 += str(y)
+            gptstring2 += " " + str(y)
+            if "href" in y:
+                http.append(y["href"])
+        # Taking elements in additional results
         for z in addresults:
-            gptstring3 += " "
-            gptstring3 += str(z)
+            gptstring3 += " " + str(z)
+            if "href" in z:
+                http.append(z["href"])
+        print("Results found: " + str(len(http)))
+
+        http = [url for url in http if not url.lower().endswith(".pdf")]
+
         # Debugging DDGS
         if word.lower() == "debug" or add.lower() == "debug" or img.lower() == "debug":
             print(gptstring)
             print(gptstring2)
             print(gptstring3)
+            for x in range(len(http)):
+                print(http[x])
 
-        payload2 += " Data: " + gptstring
+        payload2 += (
+            " Do remember to include ALL links and make verbose inferences to the best of your ability! Here is some starting data for you. Data: "
+            + gptstring
+        )
         payload3 += (
-            " Here is some more data to add onto the the report. Remember to KEEP your previous response and ADD ON, being as verbose as possible! Data: "
+            " Here is a final data check on the report. Clean up your report and remember to KEEP ALL content from your previous response(s) and ADD ON to everything especially the links at the bottom (numbered), being as VERBOSE as possible! Data: "
             + gptstring2
             + gptstring3
         )
+        payloads.append(payload)
+        payloads.append(payload2)
+        for x in range(len(http)):
+            key_content = extract_text_from_website(http[x])
+            links = (
+                "Now for each of the links you have identified, I will give you the content for each of them. Remember to ADD ON to your previous response, being as verbose as possible. Link: "
+                + http[x]
+                + " "
+                + key_content
+                + ". "
+            )
+            links += "KEEP ALL content from your PREVIOUS response(s), build upon them and analyse IN DETAIL the data provided with AS MUCH inferred information and proper organisation possible."
+            payloads.append(links)
+        payloads.append(payload3)
 
 
-def chat(payload1, payload2, payload3):
+def chat(payloads):
     global messages
-    messages.append({"role": "user", "content": payload1})
-    response = client.chat.completions.create(
-        messages=messages,
-        model="Meta-Llama-3-70b-instruct",
-    )
-    gpt_response = response.choices[0].message.content
-    #    print(gpt_response)
-    messages.append({"role": "assistant", "content": payload2})
-    response = client.chat.completions.create(
-        messages=messages,
-        model="Meta-Llama-3-70b-instruct",
-    )
-    gpt_response = response.choices[0].message.content
-    #    print(gpt_response)
-    messages.append({"role": "assistant", "content": payload3})
-    response = client.chat.completions.create(
-        messages=messages,
-        model="Meta-Llama-3-70b-instruct",
-    )
-    gpt_response = response.choices[0].message.content
-    print(gpt_response)
+    messages = []  # Initialize the message history
+
+    for i, payload in enumerate(payloads):
+        # Add user message
+        messages.append({"role": "user", "content": payload})
+
+        # Get AI response
+        response = client.chat.completions.create(
+            messages=messages,
+            model="Meta-Llama-3-70b-instruct",
+        )
+        gpt_response = response.choices[0].message.content
+        # print(gpt_response)
+
+        # Print last AI response
+        if i == len(payloads) - 1:
+            print(f"Response {i + 1}: ")
+            print(gpt_response)
 
 
 def email_address(email):
@@ -176,9 +246,6 @@ def email_address(email):
             print(f"Description: {breach['Description']}\n")
     else:
         print(f"Error: Unable to fetch data (Status Code: {response.status_code})")
-
-
-import requests
 
 
 def instagram_api(insta):
@@ -248,13 +315,16 @@ def main():
     if d.result:  # Check if the dialog returned a result
         word, add, img, email, insta = d.result
         start_time = time.time()
-
         payload_gen(word, add, img)
         print("Please wait a while...")
         print()
-        chat(payload, payload2, payload3)
+        chat(payloads)
         email_address(email)
-        instagram_api(insta)
+        # Save instagram API uses
+        if insta == "":
+            print("Instagram username not filled in!")
+        else:
+            instagram_api(insta)
         end_time = time.time()
         time_taken = end_time - start_time
         print()
