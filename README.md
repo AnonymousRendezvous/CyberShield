@@ -71,3 +71,10 @@ Do note that this is ONLY compatible with Replit and was made specifically to ad
 *Removed Instagram username search as still under beta testing and too volatile. (For now)
 Another known issue is that the compilation rate is a little slow (2-3 minutes) 
 so do bear with our program should it take a long time to load.
+
+## Webchecker
+
+### Dataset
+
+Bad websites: https://github.com/StevenBlack/hosts (Unified hosts + fakenews)
+Good websites: https://gist.github.com/bejaneps/ba8d8eed85b0c289a05c750b3d825f61

@@ -1,14 +1,14 @@
+import json
+import time
 import tkinter as tk
 from tkinter import simpledialog
 
-# pip install duckduckgo_search
-from duckduckgo_search import DDGS
-
 # pip install -U g4f
 import g4f
+import requests
+# pip install duckduckgo_search
+from duckduckgo_search import DDGS
 from g4f.client import Client
-import requests, json
-import time
 
 
 class OSINT(simpledialog.Dialog):
