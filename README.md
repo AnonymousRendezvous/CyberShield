@@ -1,5 +1,7 @@
 # CyberShield
 
+![Python 3.9](https://img.shields.io/badge/python-3.9-blue)
+
 An app that prevents scams with integrated WireGuard to prevent MITM attacks and automated OSINT to stop spearphishing.
 
 ## Architecture
@@ -16,6 +18,7 @@ Creating virtual environment in Linux:
 python3 -m venv venv
 source venv/bin/activate
 ```
+
 Creating environment in replit:
 
 1. Select python as main language
@@ -43,7 +46,7 @@ Input any person's full name under "Query:" (Please input the person's full name
 Input a known keyword associated with the person under "Any other information: ". If nothing, simply leave it blank.
 
 For "Any other information: ", type in complete sentences and don't use acronyms,
-do also remember to spell out full nouns and watch your intensifiers. 
+do also remember to spell out full nouns and watch your intensifiers.
 Leave this option blank if you have no additional information.
 
 Type either y/n in the "Do you want to trawl for images?" parameter. (Beta testing)
@@ -58,18 +61,18 @@ python webcheck.py
 
 Input the website you would like to check in the query box.
 
-
 ```
 replosint.py
 ```
+
 For those who wish to use a web interface (replit) to run code due to convenience. Please use the above code and follow the instructions from osint.py.
 
 Do note that this is ONLY compatible with Replit and was made specifically to address issues in replit.
 
 ## Additional Information
 
-*Removed Instagram username search as still under beta testing and too volatile. (For now)
-Another known issue is that the compilation rate is a little slow (2-3 minutes) 
+\*Removed Instagram username search as still under beta testing and too volatile. (For now)
+Another known issue is that the compilation rate is a little slow (2-3 minutes)
 so do bear with our program should it take a long time to load.
 
 ## Webchecker

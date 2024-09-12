@@ -262,7 +262,6 @@ def email_address(email):
             print("Please fill in the email for checking!")
 
 
-
 def instagram_api(insta):
     url = "https://instagram-scraper-api2.p.rapidapi.com/v1/info"
     querystring = {"username_or_id_or_url": insta}
@@ -348,7 +347,5 @@ def main():
         print("Please input the necessary information.")
 
 
-main()
-
-# Special thanks to:
-# https://github.com/xtekky/gpt4free, for providing free gpt 4 api
+if __name__ == "__main__":
+    main()

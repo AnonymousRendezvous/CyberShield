@@ -1,28 +1,27 @@
-from os import remove
-from os.path import exists
+from csv import DictReader
+from random import sample
 
-import requests
-from rich.progress import track
+from label_sleuth.models.util.standalone_inference import get_model_api
 
-CHARS_PER_SITE = 10000
+model_path = "model"
+model_api = get_model_api(model_path)
+category_id_to_info = model_api.get_metadata(model_path)["category_id_to_info"]
+model = model_api.load_model(model_path)
+print("MODEL READY")
 
-bad = []
-with open("good", "r", encoding="utf-8") as f:
-    for line in f:
-        bad.append("http://" + line.strip())
+with open("/home/fros/Projects/CyberShield/docs/labels.csv", "r", encoding="utf-8", newline="") as f:
+    reader = list(DictReader(f))
+    testsites = sample(reader, 20)
+    # print(testsites)
+    items_to_infer = [{"text": site["text"]} for site in testsites]
+print("CSV READY")
 
-if exists("good.out"):
-    remove("good.out")
-with open("good.out", "a", encoding="utf-8") as f:
-    for u in track(bad):
-        print(u)
-        try:
-            r = requests.get(u, timeout=5)
-        except Exception:
-            continue
-        if len(r.text) > CHARS_PER_SITE:
-            html = r.text[:CHARS_PER_SITE]
-        else:
-            html = r.text
-        html = html.replace("\n", " ").replace(",", " ")
-        f.write(u + " " + html + "\n")
+predictions = model_api.infer(model, items_to_infer)
+for sentence_dict, pred in zip(items_to_infer, predictions):
+    if isinstance(pred.label, bool):
+        category_name = next(iter(category_id_to_info.values()))["category_name"]
+    else:
+        category_name = category_id_to_info[str(pred.label)]["category_name"]
+    space_pos = sentence_dict["text"].index(" ")
+    sentence = sentence_dict["text"][:space_pos]
+    print(f'sentence: "{sentence}" -> prediction: {pred.label} (category name: "{category_name}")')

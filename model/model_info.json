@@ -1,0 +1,1 @@
+{"model_type": {"py/object": "label_sleuth.models.core.model_type.ModelType", "cls": {"py/type": "label_sleuth.models.ensemble.SVM_Ensemble"}, "name": "SVM_Ensemble"}}
