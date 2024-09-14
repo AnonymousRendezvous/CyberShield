@@ -1,5 +1,6 @@
 """Find out what personal information of a user is exposed on the Internet."""
 
+from importlib import import_module
 from json import dumps
 from time import time
 
@@ -50,7 +51,7 @@ def generate_payload(target_name: str, additional_info: str, find_images: bool =
     Args:
         target_name (str): The name of the person to get information on.
         additional_info (str): Additional background information on the target.
-        find_images (bool): Whether to find images of the target. Defaults to False
+        find_images (bool): Whether to find images of the target. Defaults to False.
 
     Returns:
         list[str]: A list of AI payloads.
@@ -120,19 +121,24 @@ def generate_payload(target_name: str, additional_info: str, find_images: bool =
     return payloads
 
 
-def chat(payloads: list[str]) -> str:
+def chat(payloads: list[str], osint_id: int) -> str:
     """Send payloads to the AI and get the results.
 
     Args:
         payloads (list[str]): The list of payloads.
+        osint_id (int): The ID of the OSINT, used to update progress.
 
     Returns:
         str: The final AI response.
     """
+    api = import_module("main")  # Importing to change the osint progresses
     client = g4f_Client(provider=MetaAI)
     messages = []  # Message history
+    api.osint_progresses[osint_id].started = True
+    api.osint_progresses[osint_id].total_payloads = len(payloads)
     for i, payload in enumerate(payloads):
         print(f"Generating report... {i}/{len(payloads)}")
+        api.osint_progresses[osint_id].current_payload = i
         # Add user message
         messages.append({"role": "user", "content": payload})
         # Get AI response
@@ -140,6 +146,7 @@ def chat(payloads: list[str]) -> str:
         gpt_response = response.choices[0].message.content
         print(gpt_response)
     # Return final AI response
+    api.osint_progresses[osint_id].complete = True
     print(gpt_response)
     return gpt_response
 
@@ -246,17 +253,21 @@ def instagram_api(username: str) -> None:
         print("Location Data: Not Provided")
 
 
-def main() -> None:
-    """The main function."""
-    target_name = input("Name: ")
-    additional_info = input("Additional info: ")
-    find_images = input("Find images? [y/N]: ") == "y"
-    email = input("Email address: ")
-    instagram = input("Instagram account: ")
+def osint(osint_id: int, target_name: str, additional_info: str, find_images: bool, email: str, instagram: str) -> str:
+    """Perform an OSINT.
+
+    Args:
+        osint_id (int): The ID of the OSINT, used to update progress.
+        target_name (str): The name of the person to get information on.
+        additional_info (str): Additional background information on the target.
+        find_images (bool): Whether to find images of the target. Defaults to False.
+        email (str): An email to check for breaches.
+        instagram (str): An Instagram account to get details of.
+    """
     start_time = time()
     payloads = generate_payload(target_name, additional_info, find_images)
     print("Payloads generated.")
-    chat(payloads)
+    chat(payloads, osint_id)
     if email:
         check_email_breaches(email)
     if instagram:
@@ -264,6 +275,16 @@ def main() -> None:
     end_time = time()
     time_taken = end_time - start_time
     print("Request completed in " + str(time_taken) + "s")
+
+
+def main() -> None:
+    """The main function, when this file is run as a script."""
+    target_name = input("Name: ")
+    additional_info = input("Additional info: ")
+    find_images = input("Find images? [y/N]: ") == "y"
+    email = input("Email address: ")
+    instagram = input("Instagram account: ")
+    osint(0, target_name, additional_info, find_images, email, instagram)
 
 
 if __name__ == "__main__":
