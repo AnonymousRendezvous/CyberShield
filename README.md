@@ -70,10 +70,9 @@ For those who wish to use a web interface (replit) to run code due to convenienc
 Do note that this is ONLY compatible with Replit and was made specifically to address issues in replit.
 
 ## Additional Information
+Average report generation time is around 5 minutes for 12 results.
 
-\*Removed Instagram username search as still under beta testing and too volatile. (For now)
-Another known issue is that the compilation rate is a little slow (2-3 minutes)
-so do bear with our program should it take a long time to load.
+To access our web app, do head to https://github.com/frosetrain/cybershield-ui 
 
 ## Webchecker
 
