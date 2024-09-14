@@ -12,6 +12,8 @@ from httpx import Client as httpx_Client
 from httpx import HTTPStatusError, RequestError
 from requests import get, post
 
+app_api = import_module("main")  # Importing to change the osint progresses
+
 
 def scrape(url: str) -> None:
     """Get the text from a website.
@@ -131,14 +133,13 @@ def chat(payloads: list[str], osint_id: int) -> str:
     Returns:
         str: The final AI response.
     """
-    api = import_module("main")  # Importing to change the osint progresses
     client = g4f_Client(provider=MetaAI)
     messages = []  # Message history
-    api.osint_progresses[osint_id].started = True
-    api.osint_progresses[osint_id].total_payloads = len(payloads)
+    app_api.osint_progresses[osint_id].started = True
+    app_api.osint_progresses[osint_id].total_payloads = len(payloads)
     for i, payload in enumerate(payloads):
         print(f"Generating report... {i}/{len(payloads)}")
-        api.osint_progresses[osint_id].current_payload = i
+        app_api.osint_progresses[osint_id].current_payload = i
         # Add user message
         messages.append({"role": "user", "content": payload})
         # Get AI response
@@ -146,23 +147,27 @@ def chat(payloads: list[str], osint_id: int) -> str:
         gpt_response = response.choices[0].message.content
         print(gpt_response)
     # Return final AI response
-    api.osint_progresses[osint_id].complete = True
+    app_api.osint_progresses[osint_id].complete = True
     print(gpt_response)
     return gpt_response
 
 
-def check_email_breaches(email: str) -> None:
+def check_email_breaches(email: str) -> str:
     """Check whether an email address was breached in any cyber attacks.
 
     Args:
         email (str): The email address.
+
+    Returns:
+        str: A breakdown of known email breaches.
     """
     api = "https://webapi.namescan.io/v1/freechecks/email/breaches"
     payload = {"email": email}
     headers = {"Content-Type": "application/json"}
     response = post(api, headers=headers, data=dumps(payload))
+    output = ""
     if response.status_code == 200:
-        print("Email Breaches:")
+        output += "Email Breaches:"
         data = response.json()
         breaches = data.get("breaches", [])
         filtered_breaches = []
@@ -179,21 +184,23 @@ def check_email_breaches(email: str) -> None:
                     }
                 )
         for breach in filtered_breaches:
-            print(f"Title: {breach['Title']}")
-            print(f"Date: {breach['Date']}")
-            print(f"Description: {breach['Description']}\n")
+            output += f"Title: {breach['Title']}"
+            output += f"Date: {breach['Date']}"
+            output += f"Description: {breach['Description']}\n"
     else:
-        print(f"Error: Unable to fetch data (Status Code: {response.status_code})")
+        output += f"Error: Unable to fetch email breaches. (Status Code: {response.status_code})"
         if str(response.status_code) == "400":
-            print("Please fill in the email for checking!")
+            output += "Please fill in the email for checking!"
+    return output
 
 
-def instagram_api(username: str) -> None:
+def instagram_api(username: str) -> str:
     """Get Instagram account details.
 
     Args:
         username (str): The Instagram username.
     """
+    output = ""
     url = "https://instagram-scraper-api2.p.rapidapi.com/v1/info"
     querystring = {"username_or_id_or_url": username}
     headers = {
@@ -217,29 +224,19 @@ def instagram_api(username: str) -> None:
     external_url = data.get("external_url", "")
 
     # Print Profile Summary
-    print(f"Instagram Profile Summary\n{'-'*30}")
-    print(f"Username: {username}")
-    print(f"Full Name: {full_name}")
-    print(f"Is Private: {'Yes' if is_private else 'No'}")
-    print(f"Is Verified: {'Yes' if is_verified else 'No'}")
-    print(f"Follower Count: {follower_count}")
-    print(f"Following Count: {following_count}")
-    print(f"Media Count: {media_count}")
-    print(f"Profile Picture URL: {profile_pic_url}\n")
+    output += f"Instagram Profile Summary\n{'-'*30}"
+    output += f"Username: {username}"
+    output += f"Full Name: {full_name}"
+    output += f"Is Private: {'Yes' if is_private else 'No'}"
+    output += f"Is Verified: {'Yes' if is_verified else 'No'}"
+    output += f"Follower Count: {follower_count}"
+    output += f"Following Count: {following_count}"
+    output += f"Media Count: {media_count}"
+    output += f"Profile Picture URL: {profile_pic_url}\n"
 
     # Print Biography and External Link
-    print(f"Biography:\n{bio if bio else '(No Bio)'}")
-    print(f"External URL: {external_url if external_url else '(No External URL)'}\n")
-
-    # Additional Information
-    print("Additional Information\n" + "-" * 30)
-    guides_available = data.get("has_guides", False)
-    fundraisers = data.get("active_standalone_fundraisers", {}).get("total_count", 0)
-    downloads_enabled = data.get("third_party_downloads_enabled", 0)
-
-    print(f"Guides Available: {'Yes' if guides_available else 'No'}")
-    print(f"Standalone Fundraisers: {fundraisers}")
-    print(f"Third Party Downloads Enabled: {'Yes' if downloads_enabled else 'No'}\n")
+    output += f"Biography:\n{bio if bio else '(No Bio)'}"
+    output += f"External URL: {external_url if external_url else '(No External URL)'}\n"
 
     # Location Data
     location_data = data.get("location_data", {})
@@ -248,9 +245,11 @@ def instagram_api(username: str) -> None:
         zip_code = location_data.get("zip", "N/A")
         latitude = location_data.get("latitude", "N/A")
         longitude = location_data.get("longitude", "N/A")
-        print(f"Location Data:\n City: {city_name}\n Zip Code: {zip_code}\n Latitude: {latitude}\n Longitude: {longitude}\n")
+        output += f"Location Data:\n City: {city_name}\n Zip Code: {zip_code}\n Latitude: {latitude}\n Longitude: {longitude}\n"
     else:
-        print("Location Data: Not Provided")
+        output += "Location Data: Not Provided"
+
+    return output
 
 
 def osint(osint_id: int, target_name: str, additional_info: str, find_images: bool, email: str, instagram: str) -> str:
@@ -267,14 +266,16 @@ def osint(osint_id: int, target_name: str, additional_info: str, find_images: bo
     start_time = time()
     payloads = generate_payload(target_name, additional_info, find_images)
     print("Payloads generated.")
-    chat(payloads, osint_id)
+    result = chat(payloads, osint_id)
     if email:
-        check_email_breaches(email)
+        result += check_email_breaches(email)
     if instagram:
-        instagram_api(instagram)
+        result += instagram_api(instagram)
     end_time = time()
     time_taken = end_time - start_time
     print("Request completed in " + str(time_taken) + "s")
+    app_api.osint_progresses[osint_id].result = result
+    return result
 
 
 def main() -> None:

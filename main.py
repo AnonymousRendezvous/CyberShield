@@ -25,6 +25,7 @@ class OsintProgress(BaseModel):
     complete: bool
     current_payload: int
     total_payloads: int
+    result: str
 
 
 osint_progresses: list[OsintProgress] = []
@@ -37,7 +38,7 @@ async def osint_submit(details: OsintDetails, background_tasks: BackgroundTasks)
     background_tasks.add_task(
         osint, id, details.target_name, details.additional_info, details.find_images, details.email, details.instagram
     )
-    osint_progresses.append(OsintProgress(started=False, complete=False, current_payload=0, total_payloads=0))
+    osint_progresses.append(OsintProgress(started=False, complete=False, current_payload=0, total_payloads=0, result=""))
     return id
 
 
