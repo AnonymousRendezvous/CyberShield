@@ -1,0 +1,13 @@
+line-length = 128
+indent-width = 4
+target-version = "py39"
+
+[lint]
+select = ["F", "E", "W", "I", "N", "D"]
+ignore = []
+
+[lint.pydocstyle]
+convention = "google"
+
+[format]
+line-ending = "lf"

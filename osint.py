@@ -1,245 +1,165 @@
-import json
-import os
-import sys
-import time
-import tkinter as tk
-from tkinter import simpledialog
+"""Find out what personal information of a user is exposed on the Internet."""
 
-import g4f
-import httpx
-import requests
+from json import dumps
+from time import time
+
 from bs4 import BeautifulSoup
 from duckduckgo_search import DDGS
-from g4f.client import Client
-
-# Suppress stderr output by redirecting it to os.devnull
-sys.stderr = open(os.devnull, "w")
-
-
-class OSINT(simpledialog.Dialog):
-    def body(self, master):
-        tk.Label(master, text="Query:").grid(row=0)
-        tk.Label(master, text="Enter a keyword associated with the person:").grid(row=1)
-        tk.Label(master, text="Do you want to trawl for images? (beta testing) y/n: ").grid(row=2)
-        tk.Label(master, text="Input your email address: ").grid(row=3)
-        tk.Label(master, text="Input your instagram username (beta testing): ").grid(row=4)
-
-        self.e0 = tk.Entry(master)
-        self.e1 = tk.Entry(master)
-        self.e2 = tk.Entry(master)
-        self.e3 = tk.Entry(master)
-        self.e4 = tk.Entry(master)
-
-        self.e0.grid(row=0, column=1)
-        self.e1.grid(row=1, column=1)
-        self.e2.grid(row=2, column=1)
-        self.e3.grid(row=3, column=1)
-        self.e4.grid(row=4, column=1)
-
-    def apply(self):
-        self.result = (
-            self.e0.get(),
-            self.e1.get(),
-            self.e2.get(),
-            self.e3.get(),
-            self.e4.get(),
-        )
+from g4f.client import Client as g4f_Client
+from g4f.Provider import MetaAI
+from httpx import Client as httpx_Client
+from httpx import HTTPStatusError, RequestError
+from requests import get, post
 
 
-# global variables
-payload = ""
-payload2 = ""
-payload3 = ""
-payloads = []
+def scrape(url: str) -> None:
+    """Get the text from a website.
 
-messages = []
-http = []
-
-# g4f client provider
-client = Client(provider=g4f.Provider.MetaAI)
-
-
-def extract_text_from_website(url):
+    Args:
+        url (str): The URL to scrape.
+    """
     try:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
-        }
-
+        headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:130.0) Gecko/20100101 Firefox/130.0"}
         # Use httpx with cookies enabled and follow redirects (cookie interference with g4f library)
-        with httpx.Client(headers=headers, follow_redirects=True) as client:
+        with httpx_Client(headers=headers, follow_redirects=True) as client:
             response = client.get(url)
             response.raise_for_status()
-
             # Parse HTML content using BeautifulSoup
             soup = BeautifulSoup(response.content, "html.parser")
-
             # Remove script, style, and other non-content elements
             for element in soup(["script", "style", "header", "footer", "nav", "aside"]):
                 element.decompose()
-
             # Extract text from remaining elements
             text = soup.get_text(separator=" ", strip=True)
-
             # Clean up the text
             lines = (line.strip() for line in text.splitlines())
             chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
             cleaned_text = "\n".join(chunk for chunk in chunks if chunk)
-
             # Limit the text to 500 characters
             limited_text = cleaned_text[:500]
-
             return limited_text
-    # Error handling
-    except httpx.HTTPStatusError as e:
+    except HTTPStatusError as e:
         return f"HTTP Error: {e}"
-    except httpx.RequestError as e:
+    except RequestError as e:
         return f"Request Error: {e}"
 
 
-def payload_gen(word, add, img):
-    global payload, payload2, payload3, http
-    new = '"' + word + '"'
-    nadd = word + " " + add
+def generate_payload(target_name: str, additional_info: str, find_images: bool = False) -> list[str]:
+    """Generate proompts for the AI.
 
-    if img == "y":
-        # Beta testing for images
-        results = DDGS().text(new, max_results=3)
-        images = DDGS().images(new, region="sg-en", max_results=2)
-    else:
-        results = DDGS().text(new, max_results=9)
-        addresults = DDGS().text(nadd, max_results=3)
+    Args:
+        target_name (str): The name of the person to get information on.
+        additional_info (str): Additional background information on the target.
+        find_images (bool): Whether to find images of the target. Defaults to False
 
-    payload = f"Write me a comprehensive report on a person that is as detailed as possible?"
-    payload += f" Do note that the person's name is, {word}. Perhaps you could also create a web of people relating to them and provide ANY and ALL links where the information can be found."
-    payload += "Do also see if you can extract basic information such as past and current education statuses, location and information from ANY accounts like their username or email."
-    payload += f" Here is the data with links, do remember to INCLUDE AND NUMBER THE LINKS at the bottom: \n"
-    gptstring = ""
-    gptstring2 = ""
-    gptstring3 = ""
-    refgptstr = ""
+    Returns:
+        list[str]: A list of AI payloads.
+    """
+    # Get DuckDuckGo results
+    quoted_target_name = f"“{target_name}”"
+    search_results = DDGS().text(quoted_target_name, max_results=9)
+    additional_results = DDGS().text(f"{target_name} {additional_info}", max_results=3)
+    if find_images:
+        images = DDGS().images(quoted_target_name, region="sg-en", max_results=2)
 
-    if img == "y":
-        for x in results:
-            gptstring += " "
-            gptstring += str(x)
-
-        for x in images:
-            refgptstr += " "
-            refgptstr += str(x)
-
-        payload2 += " Data: " + gptstring
-        payloadimg = f" Now, with the above data, I will provide you with some image links relating to {word}."
-        payloadimg += f" Do filter through all the data and give me ALL relevant links. Here is the data: {refgptstr}."
-        payload2 += " " + payloadimg
-    else:
-        # Check for duplicates in both lists
-        for item in addresults[:]:
-            if item in results:
-                addresults.remove(item)
-        # Taking elements 0-4 in results list
-        for x in results[1:6]:
-            gptstring += " " + str(x)
-            if "href" in x:
-                http.append(x["href"])
-
-        # Taking elements 5-9 in results list
-        for y in results[5:10]:
-            gptstring2 += " " + str(y)
-            if "href" in y:
-                http.append(y["href"])
-        # Taking elements in additional results
-        for z in addresults:
-            gptstring3 += " " + str(z)
-            if "href" in z:
-                http.append(z["href"])
-        print("Results found: " + str(len(http)))
-
-        http = [url for url in http if not url.lower().endswith(".pdf")]
-
-        # Debugging DDGS
-        if word.lower() == "debug" or add.lower() == "debug" or img.lower() == "debug":
-            print(gptstring)
-            print(gptstring2)
-            print(gptstring3)
-            for x in range(len(http)):
-                print(http[x])
-
-        payload2 += (
-            " Do remember to include ALL links and make verbose inferences to the best of your ability! Here is some starting data for you. Data: "
-            + gptstring
+    payloads = []
+    payloads.append(
+        "Write me a comprehensive report on a person that is as detailed as possible."
+        f" Do note that the person's name is {target_name}. Perhaps you could also create a web of people relating to them and"
+        " provide ANY and ALL links where the information can be found. Do also see if you can extract basic information such"
+        " as past and current education statuses, location and information from ANY accounts like their username or email."
+        " Here is the data with links, do remember to INCLUDE AND NUMBER THE LINKS at the bottom."
+    )
+    if find_images:
+        payloads.append(
+            "Data:\n"
+            f"{' '.join(search_results)}\n"
+            f" Now, with the above data, I will provide you with some image links relating to {target_name}."
+            f" Do filter through all the data and give me ALL relevant links. Here is the data: {' '.join(images)}."
         )
-        payload3 += (
-            " Here is a final data check on the report. Clean up your report and remember to KEEP ALL content from your previous response(s) and ADD ON to everything especially the links at the bottom (numbered), being as VERBOSE as possible! Data: "
-            + gptstring2
-            + gptstring3
-        )
-        payloads.append(payload)
-        payloads.append(payload2)
-        # Link payload generation
-        for x in range(len(http)):
-            key_content = extract_text_from_website(http[x])
-            links = (
-                "Now for each of the links you have identified, I will give you the content for each of them. Remember to ADD ON to your previous response, being as verbose as possible. Link: "
-                + http[x]
-                + " "
-                + key_content
-                + ". "
-            )
-            links += "KEEP ALL content from your PREVIOUS response(s), build upon them and analyse IN DETAIL the data provided with AS MUCH inferred information and proper organisation possible."
-            payloads.append(links)
-        payloads.append(payload3)
+
+    # Remove duplicates in search and additional results
+    for item in additional_results:
+        if item in search_results:
+            additional_results.remove(item)
+    # Get elements in result lists
+    starting_data = search_results[1:6]
+    check_data = search_results[5:10] + additional_results
+    http = []
+    for x in starting_data + check_data:
+        if "href" in str(x) and not str(x).lower().endswith(".pdf"):
+            http.append(x["href"])
+    print("Results found: " + str(len(http)))
+    starting_data = " ".join(map(str, starting_data))
+    check_data = " ".join(map(str, check_data))
+
+    print(starting_data)
+    print(check_data)
+    print(http)
+
+    payloads.append(
+        "Do remember to include ALL links and make verbose inferences to the best of your ability!"
+        f" Here is some starting data for you. Data: {starting_data}"
+    )
+    # Link payload generation
+    scraped_text = []
+    for x in http:
+        scraped_text.append(scrape(x))
+    payloads.append(
+        "Now for each of the links you have identified, I will give you the content for each of them. Remember to"
+        f" ADD ON to your previous response, being as verbose as possible. Link: {x} {' '.join(scraped_text)}."
+        " KEEP ALL content from your PREVIOUS response(s), build upon them and analyse IN DETAIL the data provided with"
+        " AS MUCH inferred information and proper organisation possible."
+    )
+    payloads.append(
+        "Here is a final data check on the report. Clean up your report and remember to KEEP ALL content from your"
+        " previous response(s) and ADD ON to everything especially the links at the bottom (numbered), being as VERBOSE"
+        f" as possible! Data: {check_data}"
+    )
+    print("Payloads:", payloads)
+    return payloads
 
 
-def chat(payloads):
-    global messages
-    messages = []  # Initialize the message history
+def chat(payloads: list[str]) -> str:
+    """Send payloads to the AI and get the results.
 
+    Args:
+        payloads (list[str]): The list of payloads.
+
+    Returns:
+        str: The final AI response.
+    """
+    client = g4f_Client(provider=MetaAI)
+    messages = []  # Message history
     for i, payload in enumerate(payloads):
-        # Add tracking message
-        if i == 0:
-            print("Setting things up... " + str(i) + "/" + str(len(payloads)))
-        elif i == 1:
-            print("Gathering information... " + str(i) + "/" + str(len(payloads)))
-        elif i == len(payloads) - 1:
-            print("Almost there... " + str(i) + "/" + str(len(payloads)))
-        else:
-            print("Generating report... " + str(i) + "/" + str(len(payloads)))
-
+        print(f"Generating report... {i}/{len(payloads)}")
         # Add user message
         messages.append({"role": "user", "content": payload})
-
         # Get AI response
-        response = client.chat.completions.create(
-            messages=messages,
-            model="Meta-Llama-3-70b-instruct",
-        )
+        response = client.chat.completions.create(messages, "Meta-Llama-3-70b-instruct")
         gpt_response = response.choices[0].message.content
-        # Uncomment code to see process generation
         print(gpt_response)
-
-        # Print last AI response
-        if i == len(payloads) - 1:
-            print(f"Response {i + 1}: ")
-            print(gpt_response)
+    # Return final AI response
+    print(gpt_response)
+    return gpt_response
 
 
-def email_address(email):
-    url = "https://webapi.namescan.io/v1/freechecks/email/breaches"
+def check_email_breaches(email: str) -> None:
+    """Check whether an email address was breached in any cyber attacks.
 
+    Args:
+        email (str): The email address.
+    """
+    api = "https://webapi.namescan.io/v1/freechecks/email/breaches"
     payload = {"email": email}
     headers = {"Content-Type": "application/json"}
-    response = requests.post(url, headers=headers, data=json.dumps(payload))
-
+    response = post(api, headers=headers, data=dumps(payload))
     if response.status_code == 200:
-        print()
-        print("Email Breaches: ")
-        print()
+        print("Email Breaches:")
         data = response.json()
         breaches = data.get("breaches", [])
         filtered_breaches = []
-
         seen_titles = set()
-
         for breach in breaches:
             title = breach.get("title", "Unknown")
             if title not in seen_titles:
@@ -251,7 +171,6 @@ def email_address(email):
                         "Description": breach.get("description", "No description available"),
                     }
                 )
-
         for breach in filtered_breaches:
             print(f"Title: {breach['Title']}")
             print(f"Date: {breach['Date']}")
@@ -262,15 +181,20 @@ def email_address(email):
             print("Please fill in the email for checking!")
 
 
-def instagram_api(insta):
+def instagram_api(username: str) -> None:
+    """Get Instagram account details.
+
+    Args:
+        username (str): The Instagram username.
+    """
     url = "https://instagram-scraper-api2.p.rapidapi.com/v1/info"
-    querystring = {"username_or_id_or_url": insta}
+    querystring = {"username_or_id_or_url": username}
     headers = {
         "x-rapidapi-key": "7cef9caf7emshbcd7d852995df3cp114277jsn623179640e47",
         "x-rapidapi-host": "instagram-scraper-api2.p.rapidapi.com",
     }
 
-    response = requests.get(url, headers=headers, params=querystring)
+    response = get(url, headers=headers, params=querystring)
     data = response.json().get("data", {})
 
     # Basic Profile Information
@@ -322,29 +246,24 @@ def instagram_api(insta):
         print("Location Data: Not Provided")
 
 
-def main():
-    root = tk.Tk()
-    root.withdraw()  # Hide the root window
-    d = OSINT(root)
-    if d.result:  # Check if the dialog returned a result
-        word, add, img, email, insta = d.result
-        start_time = time.time()
-        payload_gen(word, add, img)
-        print("Please wait a while...")
-        print()
-        chat(payloads)
-        email_address(email)
-        # Save instagram API uses
-        if insta == "":
-            print("Instagram username not filled in!")
-        else:
-            instagram_api(insta)
-        end_time = time.time()
-        time_taken = end_time - start_time
-        print()
-        print("Request completed in " + str(time_taken) + "s")
-    else:
-        print("Please input the necessary information.")
+def main() -> None:
+    """The main function."""
+    target_name = input("Name: ")
+    additional_info = input("Additional info: ")
+    find_images = input("Find images? [y/N]: ") == "y"
+    email = input("Email address: ")
+    instagram = input("Instagram account: ")
+    start_time = time()
+    payloads = generate_payload(target_name, additional_info, find_images)
+    print("Payloads generated.")
+    chat(payloads)
+    if email:
+        check_email_breaches(email)
+    if instagram:
+        instagram_api(instagram)
+    end_time = time()
+    time_taken = end_time - start_time
+    print("Request completed in " + str(time_taken) + "s")
 
 
 if __name__ == "__main__":
