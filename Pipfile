@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+beautifulsoup4 = "==4.12.3"
+duckduckgo-search = "==6.2.11"
+fastapi = {extras = ["standard"], version = "==0.114.2"}
+g4f = "==0.3.2.6"
+httpx = "==0.25.1"
+curl-cffi = "==0.7.1"
+requests = "==2.31.0"
+label-sleuth = "==0.20.2"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
+python_full_version = "3.9.19"
