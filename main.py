@@ -1,7 +1,8 @@
 """FastAPI for OSINT and Webcheck."""
 
-from fastapi import BackgroundTasks, FastAPI
 from urllib.parse import unquote
+
+from fastapi import BackgroundTasks, FastAPI
 from pydantic import BaseModel
 
 from osint import osint
