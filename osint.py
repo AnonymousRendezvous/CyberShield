@@ -76,9 +76,9 @@ def generate_payload(target_name: str, additional_info: str, find_images: bool =
     if find_images:
         payloads.append(
             "Data:\n"
-            f"{' '.join(search_results)}\n"
+            f"{' '.join(map(str, search_results))}\n"
             f" Now, with the above data, I will provide you with some image links relating to {target_name}."
-            f" Do filter through all the data and give me ALL relevant links. Here is the data: {' '.join(images)}."
+            f" Do filter through all the data and give me ALL relevant links. Here is the data: {' '.join(map(str, images))}."
         )
 
     # Remove duplicates in search and additional results
@@ -166,31 +166,33 @@ def check_email_breaches(email: str) -> str:
     headers = {"Content-Type": "application/json"}
     response = post(api, headers=headers, data=dumps(payload))
     output = ""
-    if response.status_code == 200:
-        output += "\n\n## Email Breaches:\n\n```\n"
-        data = response.json()
-        breaches = data.get("breaches", [])
-        filtered_breaches = []
-        seen_titles = set()
-        for breach in breaches:
-            title = breach.get("title", "Unknown")
-            if title not in seen_titles:
-                seen_titles.add(title)
-                filtered_breaches.append(
-                    {
-                        "Title": title,
-                        "Date": breach.get("date", "Unknown"),
-                        "Description": breach.get("description", "No description available"),
-                    }
-                )
-        for breach in filtered_breaches:
-            output += f"Title: {breach['Title']}\n"
-            output += f"Date: {breach['Date']}\n"
-            output += f"Description: {breach['Description']}\n"
+    if response.status_code != 200:
+        return ""
+    output += "\n\n## Email Breaches\n\n"
+    data = response.json()
+    breaches = data.get("breaches", [])
+    if breaches:
+        output += "```\n"
     else:
-        output += f"Error: Unable to fetch email breaches. (Status Code: {response.status_code})\n"
-        if str(response.status_code) == "400":
-            output += "Please fill in the email for checking!\n"
+        output += "No breaches found."
+        return output
+    filtered_breaches = []
+    seen_titles = set()
+    for breach in breaches:
+        title = breach.get("title", "Unknown")
+        if title not in seen_titles:
+            seen_titles.add(title)
+            filtered_breaches.append(
+                {
+                    "Title": title,
+                    "Date": breach.get("date", "Unknown"),
+                    "Description": breach.get("description", "No description available"),
+                }
+            )
+    for breach in filtered_breaches:
+        output += f"Title: {breach['Title']}\n"
+        output += f"Date: {breach['Date']}\n"
+        output += f"Description: {breach['Description']}\n"
     output += "```"
     return output
 
@@ -201,7 +203,7 @@ def instagram_api(username: str) -> str:
     Args:
         username (str): The Instagram username.
     """
-    output = "\n\n## Instagram Details:\n\n```\n"
+    output = "\n\n## Instagram Details\n\n```\n"
     url = "https://instagram-scraper-api2.p.rapidapi.com/v1/info"
     querystring = {"username_or_id_or_url": username}
     headers = {
