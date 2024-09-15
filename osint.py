@@ -167,7 +167,7 @@ def check_email_breaches(email: str) -> str:
     response = post(api, headers=headers, data=dumps(payload))
     output = ""
     if response.status_code == 200:
-        output += "Email Breaches:"
+        output += "\n\n## Email Breaches:\n\n```\n"
         data = response.json()
         breaches = data.get("breaches", [])
         filtered_breaches = []
@@ -184,13 +184,14 @@ def check_email_breaches(email: str) -> str:
                     }
                 )
         for breach in filtered_breaches:
-            output += f"Title: {breach['Title']}"
-            output += f"Date: {breach['Date']}"
+            output += f"Title: {breach['Title']}\n"
+            output += f"Date: {breach['Date']}\n"
             output += f"Description: {breach['Description']}\n"
     else:
-        output += f"Error: Unable to fetch email breaches. (Status Code: {response.status_code})"
+        output += f"Error: Unable to fetch email breaches. (Status Code: {response.status_code})\n"
         if str(response.status_code) == "400":
-            output += "Please fill in the email for checking!"
+            output += "Please fill in the email for checking!\n"
+    output += "```"
     return output
 
 
@@ -200,7 +201,7 @@ def instagram_api(username: str) -> str:
     Args:
         username (str): The Instagram username.
     """
-    output = ""
+    output = "\n\n## Instagram Details:\n\n```\n"
     url = "https://instagram-scraper-api2.p.rapidapi.com/v1/info"
     querystring = {"username_or_id_or_url": username}
     headers = {
@@ -224,18 +225,17 @@ def instagram_api(username: str) -> str:
     external_url = data.get("external_url", "")
 
     # Print Profile Summary
-    output += f"Instagram Profile Summary\n{'-'*30}"
-    output += f"Username: {username}"
-    output += f"Full Name: {full_name}"
-    output += f"Is Private: {'Yes' if is_private else 'No'}"
-    output += f"Is Verified: {'Yes' if is_verified else 'No'}"
-    output += f"Follower Count: {follower_count}"
-    output += f"Following Count: {following_count}"
-    output += f"Media Count: {media_count}"
+    output += f"Username: {username}\n"
+    output += f"Full Name: {full_name}\n"
+    output += f"Is Private: {'Yes' if is_private else 'No'}\n"
+    output += f"Is Verified: {'Yes' if is_verified else 'No'}\n"
+    output += f"Follower Count: {follower_count}\n"
+    output += f"Following Count: {following_count}\n"
+    output += f"Media Count: {media_count}\n"
     output += f"Profile Picture URL: {profile_pic_url}\n"
 
     # Print Biography and External Link
-    output += f"Biography:\n{bio if bio else '(No Bio)'}"
+    output += f"Biography: {bio if bio else '(No Bio)'}\n"
     output += f"External URL: {external_url if external_url else '(No External URL)'}\n"
 
     # Location Data
@@ -245,10 +245,10 @@ def instagram_api(username: str) -> str:
         zip_code = location_data.get("zip", "N/A")
         latitude = location_data.get("latitude", "N/A")
         longitude = location_data.get("longitude", "N/A")
-        output += f"Location Data:\n City: {city_name}\n Zip Code: {zip_code}\n Latitude: {latitude}\n Longitude: {longitude}\n"
+        output += f"Location Data:\nCity: {city_name}\nZip Code: {zip_code}\nLatitude: {latitude}\nLongitude: {longitude}\n"
     else:
-        output += "Location Data: Not Provided"
-
+        output += "Location Data: Not Provided\n"
+    output += "```"
     return output
 
 
