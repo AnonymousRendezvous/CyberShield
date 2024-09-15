@@ -1,7 +1,7 @@
 beautifulsoup4~=4.12.3
-curl-cffi~=0.7.1
 duckduckgo_search~=6.2.11
 fastapi[standard]~=0.114.1
 g4f~=0.3.2.6
 httpx~=0.25.1
 requests~=2.32.3
+label-sleuth~=0.20.2
