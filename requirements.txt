@@ -3,5 +3,6 @@ duckduckgo_search==6.2.11
 fastapi[standard]==0.114.2
 g4f==0.3.2.6
 httpx==0.25.1
+curl_cffi==0.7.1
 requests==2.31.0
 label-sleuth==0.20.2
