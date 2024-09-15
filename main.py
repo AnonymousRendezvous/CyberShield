@@ -1,9 +1,11 @@
 """FastAPI for OSINT and Webcheck."""
 
 from fastapi import BackgroundTasks, FastAPI
+from urllib.parse import unquote
 from pydantic import BaseModel
 
 from osint import osint
+from webcheck import webcheck
 
 app = FastAPI()
 
@@ -28,6 +30,13 @@ class OsintProgress(BaseModel):
     result: str
 
 
+class WebcheckResult(BaseModel):
+    """Results of webcheck."""
+
+    label: bool
+    score: float
+
+
 osint_progresses: list[OsintProgress] = []
 
 
@@ -46,3 +55,13 @@ async def osint_submit(details: OsintDetails, background_tasks: BackgroundTasks)
 def osint_status(task_id: int) -> OsintProgress:
     """Get the status of the OSINT for a given task."""
     return osint_progresses[task_id]
+
+
+@app.get("/webcheck")
+def perform_webcheck(url: str) -> WebcheckResult:
+    """Perform a webcheck on the URL."""
+    url = unquote(url)
+    if url[0:4] != "http":
+        url = "http://" + url
+    result = webcheck(url)
+    return WebcheckResult(label=result[0], score=result[1])
