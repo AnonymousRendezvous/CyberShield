@@ -1,7 +1,7 @@
-beautifulsoup4~=4.12.3
-duckduckgo_search~=6.2.11
-fastapi[standard]~=0.114.1
-g4f~=0.3.2.6
-httpx~=0.25.1
+beautifulsoup4
+duckduckgo_search
+fastapi[standard]
+g4f
+httpx
 requests
-label-sleuth~=0.20.2
+label-sleuth
