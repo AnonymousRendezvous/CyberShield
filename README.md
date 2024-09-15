@@ -51,8 +51,8 @@ You can see the CSV files containing our training data in the `training-data` fo
 
 ## Disclaimers
 
-[^1] Please use your own name. We are not responsible for any cases of this tool being used for stalking.
-
 (TODO) Write a whole legal disclaimer about the OSINT tool
 
 The webchecker is not completely reliable, so exercise your own judgement when browsing the web. If a website seems suspicious, don't click on the link.
+
+[^1]: Please use your own name. We are not responsible for any cases of this tool being used for stalking.
