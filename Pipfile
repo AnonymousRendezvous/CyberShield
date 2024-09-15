@@ -4,13 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-beautifulsoup4 = "==4.12.3"
-duckduckgo-search = "==6.2.11"
-fastapi = {extras = ["standard"], version = "==0.114.2"}
-g4f = "==0.3.2.6"
-httpx = "==0.25.1"
-curl-cffi = "==0.7.1"
-requests = "==2.31.0"
+beautifulsoup4 = "*"
+duckduckgo-search = "*"
+fastapi = {extras = ["standard"], version = "*"}
+g4f = "*"
+httpx = "*"
+curl-cffi = "*"
+requests = "*"
 label-sleuth = "==0.20.2"
 
 [dev-packages]
