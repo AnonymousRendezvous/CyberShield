@@ -15,7 +15,7 @@ from requests import get, post
 app_api = import_module("main")  # Importing to change the osint progresses
 
 
-def scrape(url: str) -> None:
+def scrape(url: str) -> str:
     """Get the text from a website.
 
     Args:
