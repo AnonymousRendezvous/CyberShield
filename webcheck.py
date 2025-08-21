@@ -36,4 +36,5 @@ def webcheck(url: str) -> Union[tuple[bool, float], None]:
     items_to_infer = [{"text": url + " " + html}]
     predictions = model_api.infer(model, items_to_infer)
     pred = predictions[0]
+    print("testing")
     return (pred.label, pred.score)
